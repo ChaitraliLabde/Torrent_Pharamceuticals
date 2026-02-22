@@ -1,0 +1,313 @@
+/* Torrent Pharmaceuticals - Market & Sales MIS */
+
+:root {
+  --primary: #0d47a1;
+  --primary-light: #1565c0;
+  --accent: #00838f;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #1a237e;
+  --text-muted: #5c6bc0;
+  --border: #e8eaf6;
+  --success: #2e7d32;
+  --shadow: 0 2px 8px rgba(13, 71, 161, 0.08);
+  --shadow-lg: 0 10px 24px rgba(13, 71, 161, 0.12);
+  --shadow-sm: 0 1px 3px rgba(13, 71, 161, 0.08);
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 1rem 2rem 1.15rem;
+  box-shadow: var(--shadow-lg);
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.header p {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin-top: 0.25rem;
+}
+
+.nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+  padding: 0.48rem 0.95rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: background 0.18s ease, transform 0.15s ease, border-color 0.2s ease;
+}
+
+.nav a:hover,
+.nav a.active {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.35);
+}
+
+.nav a:hover {
+  transform: translateY(-1px);
+}
+
+/* Main */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.6rem 2rem 2.2rem;
+}
+
+.page-title {
+  font-size: 1.3rem;
+  color: var(--text);
+  margin-bottom: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.3rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.card h2 {
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Dashboard grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.stat-box {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.15rem;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--accent);
+  border: 1px solid var(--border);
+}
+
+.stat-box .value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+}
+
+.stat-box .label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+.stat-box .growth {
+  font-size: 0.8rem;
+  color: var(--success);
+  margin-top: 0.35rem;
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.72rem 0.95rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: var(--bg);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tr:hover td {
+  background: rgba(13, 71, 161, 0.04);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Market sections */
+.market-section {
+  margin-bottom: 1.5rem;
+}
+
+.market-section h3 {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  gap: 1rem;
+}
+
+.bar-row .label {
+  min-width: 140px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.bar-row .bar-wrap {
+  flex: 1;
+  height: 22px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #dde2fb;
+}
+
+.bar-row .bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 4px;
+  min-width: 4px;
+  transition: width 0.3s ease;
+}
+
+.bar-row .value {
+  min-width: 60px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Common form controls (used across pages) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.14);
+}
+
+button {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  transform: none;
+}
+
+/* Loading & error */
+.loading, .error {
+  text-align: center;
+  padding: 1.9rem;
+  color: var(--text-muted);
+}
+
+.error {
+  color: #c62828;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 1.8rem;
+  background: rgba(255,255,255,0.65);
+}
+
+@media (max-width: 600px) {
+  .header, .main { padding-left: 1rem; padding-right: 1rem; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .nav { gap: 0.4rem; }
+  .nav a { font-size: 0.85rem; padding: 0.42rem 0.75rem; }
+  .card { padding: 1rem; }
+  th, td { padding: 0.6rem 0.7rem; }
+}

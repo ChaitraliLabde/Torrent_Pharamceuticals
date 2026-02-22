@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Support | Torrent Pharma MIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+    .ds-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; }
+    .ds-card h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .high { color: var(--success); }
+    .low { color: #c62828; }
+    .filter-bar { margin-bottom: 1rem; }
+    .filter-bar select { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS — Decision Support</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="data-entry.html">Data Entry</a>
+      <a href="reports.html">Reports</a>
+      <a href="decision-support.html" class="active">Decision Support</a>
+      <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">Decision Support — High &amp; Low Performance</h1>
+    <div class="filter-bar">
+      <label>Period: </label>
+      <select id="ds-month"></select>
+    </div>
+    <div id="ds-content">
+      <div class="loading">Loading…</div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      // Hide content until role check passes
+      document.body.style.opacity = '0';
+      
+      // noRedirect=true so we handle access denial ourselves (show a message, not a silent redirect)
+      requireRole(['admin', 'manager'], true).then(function () {
+        document.body.style.opacity = '1';
+        var u = getCurrentUser();
+        if (u) document.getElementById('profile-link').title = u.email;
+        document.getElementById('btn-logout').onclick = signOut;
+      }).catch(function (err) {
+        var u = getCurrentUser();
+        if (!u) { window.location.href = (window.APP_BASE || '') + '/login.html'; return; }  // not logged in → login
+        document.querySelector('main').innerHTML =
+          '<div class="card" style="text-align:center;padding:2rem;">' +
+          '<h2>Access Denied</h2>' +
+          '<p>Decision Support is only available to <strong>Admin</strong> and <strong>Manager</strong> roles.</p>' +
+          '<p>Your current role: <strong>' + (getCurrentUserRole() || 'sales_exec') + '</strong></p>' +
+          '<p><a href="index.html">Return to Dashboard</a></p>' +
+          '</div>';
+        document.body.style.opacity = '1';
+        if (u) document.getElementById('profile-link').title = u.email;
+        document.getElementById('btn-logout').onclick = signOut;
+      });
+
+      var monthSelect = document.getElementById('ds-month');
+      var d = new Date();
+      for (var i = 0; i < 12; i++) {
+        var y = d.getFullYear(), m = d.getMonth() - i;
+        if (m < 0) { m += 12; y--; }
+        var val = y + '-' + ('0' + (m + 1)).slice(-2);
+        monthSelect.innerHTML += '<option value="' + val + '">' + val + '</option>';
+      }
+
+      function load() {
+        var month = monthSelect.value;
+        var el = document.getElementById('ds-content');
+        if (typeof db === 'undefined') {
+          el.innerHTML = '<div class="error">Configure Firebase to see data.</div>';
+          return;
+        }
+        db.ref('sales_entries').once('value').then(function (snap) {
+          var val = snap.val();
+          var monthData = [];
+          if (val) Object.keys(val).forEach(function (k) {
+            var x = val[k];
+            if ((x.date || '').slice(0, 7) === month) monthData.push(x);
+          });
+          var byRegion = {}, byProduct = {};
+          monthData.forEach(function (x) {
+            var v = x.value || 0;
+            byRegion[x.region || 'Other'] = (byRegion[x.region || 'Other'] || 0) + v;
+            byProduct[x.product || 'Other'] = (byProduct[x.product || 'Other'] || 0) + v;
+          });
+          function topBottom(obj, n) {
+            var arr = Object.keys(obj).map(function (k) { return { name: k, value: obj[k] }; });
+            arr.sort(function (a, b) { return b.value - a.value; });
+            return { top: arr.slice(0, n), bottom: arr.slice(-n).reverse() };
+          }
+          var region = topBottom(byRegion, 3);
+          var product = topBottom(byProduct, 3);
+          var list = function (items, cls) {
+            return items.length ? '<ul>' + items.map(function (x) { return '<li>' + x.name + ' — ₹ ' + (x.value.toFixed(2)) + ' Lakhs</li>'; }).join('') + '</ul>' : '<p>No data</p>';
+          };
+          el.innerHTML = '<div class="ds-grid">'
+            + '<div class="card ds-card"><h3 class="high">High performance — Regions</h3>' + list(region.top, 'high') + '</div>'
+            + '<div class="card ds-card"><h3 class="low">Low performance — Regions</h3>' + list(region.bottom, 'low') + '</div>'
+            + '<div class="card ds-card"><h3 class="high">High performance — Products</h3>' + list(product.top, 'high') + '</div>'
+            + '<div class="card ds-card"><h3 class="low">Low performance — Products</h3>' + list(product.bottom, 'low') + '</div>'
+            + '</div>';
+        }).catch(function () {
+          el.innerHTML = '<div class="error">Failed to load. Check Firebase.</div>';
+        });
+      }
+      monthSelect.addEventListener('change', load);
+      appReady.then(load);
+    })();
+  </script>
+</body>
+</html>

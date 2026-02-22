@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Torrent Pharma MIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+    .notify-wrap { margin-bottom: 1rem; display: grid; gap: 0.6rem; }
+    .notify-item { border-radius: var(--radius); padding: 0.75rem 0.85rem; font-size: 0.88rem; border: 1px solid var(--border); }
+    .notify-item.info { background: #eef5ff; color: #0d47a1; }
+    .notify-item.warn { background: #fff8e1; color: #7a5a00; border-color: #f0d58a; }
+    .notify-item.ok { background: #e8f5e9; color: #1f6f35; border-color: #b8dfbc; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS</p>
+    <nav class="nav">
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="data-entry.html">Data Entry</a>
+      <a href="reports.html">Reports</a>
+      <a href="decision-support.html">Decision Support</a>
+      <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">Dashboard</h1>
+    <div id="dashboard-content">
+      <div class="loading">Loading…</div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      requireRole(['admin', 'manager', 'sales_exec']).then(function () {
+        var role = getCurrentUserRole();
+        document.querySelectorAll('nav a[href="reports.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="decision-support.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        var u = getCurrentUser();
+        if (u) document.getElementById('profile-link').title = u.email;
+        document.getElementById('btn-logout').onclick = signOut;
+      });
+
+      var el = document.getElementById('dashboard-content');
+      function render(data) {
+        var daily = data.daily || 0, monthly = data.monthly || 0, byRegion = data.byRegion || {};
+        var monthlyTarget = data.monthlyTarget || 0;
+        var targetPct = monthlyTarget ? ((monthly / monthlyTarget) * 100) : 0;
+        var targetClass = monthlyTarget && monthly >= monthlyTarget ? 'style="color:var(--success);"' : 'style="color:#c62828;"';
+        var regionRows = Object.keys(byRegion).sort().map(function (r) { return '<tr><td>' + r + '</td><td>₹ ' + (byRegion[r].toFixed(2)) + ' Lakhs</td></tr>'; }).join('');
+        var notices = [];
+        if (daily === 0) notices.push('<div class="notify-item warn">No sales entries have been submitted for today yet.</div>');
+        if (data.visitCount === 0) notices.push('<div class="notify-item info">No doctor visits recorded this month so far.</div>');
+        if (monthlyTarget > 0 && data.dayOfMonth >= 20 && targetPct < 60) notices.push('<div class="notify-item warn">Target alert: only ' + targetPct.toFixed(1) + '% achieved after day ' + data.dayOfMonth + '.</div>');
+        if (monthlyTarget > 0 && monthly >= monthlyTarget) notices.push('<div class="notify-item ok">Great job! Monthly target has been achieved.</div>');
+        if (monthlyTarget === 0) notices.push('<div class="notify-item info">Monthly target is not set for this month.</div>');
+        el.innerHTML = ''
+          + (notices.length ? '<div class="notify-wrap">' + notices.join('') + '</div>' : '')
+          + '<div class="dashboard-grid">'
+          + '  <div class="stat-box"><div class="value">₹ ' + (daily.toFixed(2)) + '</div><div class="label">Today\'s Sales (Lakhs)</div></div>'
+          + '  <div class="stat-box"><div class="value">₹ ' + (monthly.toFixed(2)) + '</div><div class="label">This Month (Lakhs)</div></div>'
+          + '  <div class="stat-box"><div class="value">' + (data.visitCount || 0) + '</div><div class="label">Doctor Visits (This Month)</div></div>'
+          + '  <div class="stat-box"><div class="value">₹ ' + (monthlyTarget.toFixed(2)) + '</div><div class="label">Monthly Target (Lakhs)</div><div class="label" ' + targetClass + '>' + (monthlyTarget ? targetPct.toFixed(1) + '% Achieved' : 'Target Not Set') + '</div></div>'
+          + '</div>'
+          + '<div class="card"><h2>Sales by Region (This Month)</h2><div class="table-wrap"><table><thead><tr><th>Region</th><th>Value (₹ Lakhs)</th></tr></thead><tbody>'
+          + (regionRows || '<tr><td colspan="2">No data</td></tr>')
+          + '</tbody></table></div></div>';
+      }
+
+      function load() {
+        if (typeof db === 'undefined') { el.innerHTML = '<div class="error">Configure Firebase to see live data.</div>'; return; }
+        var _now = new Date();
+        var today = _now.getFullYear() + '-' + ('0' + (_now.getMonth() + 1)).slice(-2) + '-' + ('0' + _now.getDate()).slice(-2);
+        var monthKey = _now.getFullYear() + '-' + ('0' + (_now.getMonth() + 1)).slice(-2);
+        db.ref('sales_entries').once('value').then(function (snap) {
+          var daily = 0, monthly = 0, byRegion = {};
+          var val = snap.val();
+          if (val) {
+            Object.keys(val).forEach(function (k) {
+              var x = val[k];
+              var v = x.value || 0;
+              if (x.date === today) daily += v;
+              if ((x.date || '').slice(0, 7) === monthKey) {
+                monthly += v;
+                byRegion[x.region || 'Other'] = (byRegion[x.region || 'Other'] || 0) + v;
+              }
+            });
+          }
+          return db.ref('doctor_visits').once('value').then(function (vSnap) {
+            var visitCount = 0;
+            var vVal = vSnap.val();
+            if (vVal) {
+              Object.keys(vVal).forEach(function (k) {
+                if ((vVal[k].date || '').slice(0, 7) === monthKey) visitCount++;
+              });
+            }
+            return db.ref('targets').once('value').then(function (tSnap) {
+              var monthlyTarget = 0;
+              var tVal = tSnap.val();
+              if (tVal) {
+                Object.keys(tVal).forEach(function (k) {
+                  var t = tVal[k];
+                  if (t.period === monthKey) monthlyTarget += (t.targetValue || 0);
+                });
+              }
+              render({ daily: daily, monthly: monthly, byRegion: byRegion, visitCount: visitCount, monthlyTarget: monthlyTarget, dayOfMonth: _now.getDate() });
+            });
+          });
+        }).catch(function () {
+          el.innerHTML = '<div class="error">Failed to load dashboard. Check Firebase config and rules.</div>';
+        });
+      }
+      appReady.then(load);
+    })();
+  </script>
+</body>
+</html>

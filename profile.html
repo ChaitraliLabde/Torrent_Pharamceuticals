@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Torrent Pharma MIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+    .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .kv { display: grid; gap: 0.65rem; }
+    .kv-row { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.45rem; }
+    .kv-row .k { color: var(--text-muted); font-size: 0.85rem; }
+    .kv-row .v { font-weight: 600; font-size: 0.9rem; text-align: right; word-break: break-word; }
+    .form-group { margin-bottom: 0.8rem; }
+    .form-group label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+    .form-group input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; }
+    .btn-primary { padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .save-msg { margin-top: 0.75rem; padding: 0.5rem 0.75rem; border-radius: var(--radius); font-size: 0.88rem; display: none; }
+    .save-msg.success { background: #e8f5e9; color: var(--success); }
+    .save-msg.error { background: #ffebee; color: #c62828; }
+    .mini-grid { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 0.65rem; }
+    .mini-stat { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.8rem; background: #fff; }
+    .mini-stat .n { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+    .mini-stat .l { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+    @media (max-width: 700px) { .mini-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS - Profile</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="data-entry.html">Data Entry</a>
+      <a href="reports.html">Reports</a>
+      <a href="decision-support.html">Decision Support</a>
+      <span class="nav-right"><a href="profile.html" class="active">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">My Profile</h1>
+    <div class="profile-grid">
+      <div class="card">
+        <h2>Account Details</h2>
+        <div class="kv">
+          <div class="kv-row"><span class="k">Name</span><span class="v" id="p-name">-</span></div>
+          <div class="kv-row"><span class="k">Email</span><span class="v" id="p-email">-</span></div>
+          <div class="kv-row"><span class="k">Role</span><span class="v" id="p-role">-</span></div>
+          <div class="kv-row"><span class="k">Joined</span><span class="v" id="p-joined">-</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Edit Profile</h2>
+        <form id="profile-form">
+          <div class="form-group">
+            <label for="name">Display Name</label>
+            <input type="text" id="name" required maxlength="40" placeholder="Enter your name">
+          </div>
+          <button type="submit" class="btn-primary" id="btn-save">Save Changes</button>
+          <div id="profile-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>My Activity (Current Month)</h2>
+      <div class="mini-grid">
+        <div class="mini-stat"><div class="n" id="s-count">0</div><div class="l">Sales Entries</div></div>
+        <div class="mini-stat"><div class="n" id="v-count">0</div><div class="l">Doctor Visits</div></div>
+        <div class="mini-stat"><div class="n" id="t-count">0</div><div class="l">Targets Set</div></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      function monthKeyNow() {
+        var d = new Date();
+        return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+      }
+
+      function fmtDate(ts) {
+        if (!ts) return '-';
+        try {
+          return new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        } catch (e) { return '-'; }
+      }
+
+      function showMsg(text, isError) {
+        var el = document.getElementById('profile-msg');
+        el.textContent = text;
+        el.className = 'save-msg ' + (isError ? 'error' : 'success');
+        el.style.display = 'block';
+        setTimeout(function () { el.style.display = 'none'; }, 4000);
+      }
+
+      function loadMyActivity(user, role) {
+        var mk = monthKeyNow();
+        db.ref('sales_entries').once('value').then(function (snap) {
+          var count = 0;
+          var val = snap.val();
+          if (val) Object.keys(val).forEach(function (k) {
+            var r = val[k];
+            if ((r.date || '').slice(0, 7) === mk && r.enteredBy === user.uid) count++;
+          });
+          document.getElementById('s-count').textContent = String(count);
+        });
+
+        db.ref('doctor_visits').once('value').then(function (snap) {
+          var count = 0;
+          var val = snap.val();
+          if (val) Object.keys(val).forEach(function (k) {
+            var r = val[k];
+            if ((r.date || '').slice(0, 7) === mk && r.enteredBy === user.uid) count++;
+          });
+          document.getElementById('v-count').textContent = String(count);
+        });
+
+        db.ref('targets').once('value').then(function (snap) {
+          var count = 0;
+          var val = snap.val();
+          if (val) Object.keys(val).forEach(function (k) {
+            var r = val[k];
+            if (r.period === mk && r.setBy === user.uid) count++;
+          });
+          document.getElementById('t-count').textContent = String(count);
+        });
+
+        document.querySelectorAll('nav a[href="reports.html"], nav a[href="decision-support.html"]').forEach(function (a) {
+          a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none';
+        });
+      }
+
+      requireRole(['admin', 'manager', 'sales_exec']).then(function (ctx) {
+        var user = ctx.user;
+        var role = ctx.role;
+        document.getElementById('btn-logout').onclick = signOut;
+
+        db.ref('users/' + user.uid).once('value').then(function (snap) {
+          var row = snap.exists() ? (snap.val() || {}) : {};
+          var name = row.name || (user.email ? user.email.split('@')[0] : 'User');
+          var createdAt = row.createdAt || null;
+
+          document.getElementById('p-name').textContent = name;
+          document.getElementById('p-email').textContent = user.email || '-';
+          document.getElementById('p-role').textContent = role || 'sales_exec';
+          document.getElementById('p-joined').textContent = fmtDate(createdAt);
+          document.getElementById('name').value = name;
+
+          document.getElementById('profile-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var btn = document.getElementById('btn-save');
+            var nextName = document.getElementById('name').value.trim();
+            if (!nextName) { showMsg('Name cannot be empty.', true); return; }
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            db.ref('users/' + user.uid).update({
+              name: nextName,
+              updatedAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(function () {
+              document.getElementById('p-name').textContent = nextName;
+              showMsg('Profile updated successfully.', false);
+              btn.disabled = false;
+              btn.textContent = 'Save Changes';
+            }).catch(function (err) {
+              showMsg(err.message || 'Failed to update profile.', true);
+              btn.disabled = false;
+              btn.textContent = 'Save Changes';
+            });
+          });
+        });
+
+        loadMyActivity(user, role);
+      }).catch(function () {
+        window.location.href = (window.APP_BASE || '') + '/login.html';
+      });
+    })();
+  </script>
+</body>
+</html>

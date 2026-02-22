@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Torrent Pharma MIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .login-card { width: 100%; max-width: 380px; }
+    .login-card h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted); }
+    .form-group input,
+    .form-group select { width: 100%; padding: 0.65rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 1rem; background: white; }
+    .form-group input:focus,
+    .form-group select:focus { outline: none; border-color: var(--primary); }
+    .btn { display: inline-block; padding: 0.65rem 1.25rem; border: none; border-radius: var(--radius); font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: white; width: 100%; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .reg-msg { margin-top: 1rem; padding: 0.75rem; border-radius: var(--radius); font-size: 0.9rem; display: none; }
+    .reg-msg.error { background: #ffebee; color: #c62828; }
+    .reg-msg.success { background: #e8f5e9; color: var(--success); }
+    .login-card a { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card card">
+      <h1>Torrent Pharmaceuticals</h1>
+      <p>Sales &amp; Marketing MIS — Create account</p>
+
+      <form id="register-form">
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" required placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password <span style="font-weight:400;">(min 6 characters)</span></label>
+          <input type="password" id="reg-password" required minlength="6" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label for="reg-confirm">Confirm password</label>
+          <input type="password" id="reg-confirm" required placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label for="reg-role">Role</label>
+          <select id="reg-role" required>
+            <option value="">— Select your role —</option>
+            <option value="sales_exec">Sales Executive</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-register">Create account</button>
+        <p style="margin-top:1rem;font-size:0.85rem;">
+          Already have an account? <a href="login.html">Sign in</a>
+        </p>
+      </form>
+
+      <div id="reg-msg" class="reg-msg"></div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    (function () {
+      var form    = document.getElementById('register-form');
+      var msg     = document.getElementById('reg-msg');
+      var btnReg  = document.getElementById('btn-register');
+
+      function showMsg(text, isError) {
+        msg.textContent = text;
+        msg.className   = 'reg-msg ' + (isError ? 'error' : 'success');
+        msg.style.display = 'block';
+      }
+
+      // Check Firebase is configured
+      var configured = typeof firebase !== 'undefined' &&
+        typeof FIREBASE_CONFIG !== 'undefined' &&
+        FIREBASE_CONFIG.apiKey &&
+        FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
+
+      if (!configured) {
+        showMsg('Firebase is not configured. Fill in js/firebase-config.js first.', true);
+        btnReg.disabled = true;
+        return;
+      }
+
+      // Initialise Firebase (safe to call multiple times — SDK ignores duplicates)
+      if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      var auth = firebase.auth();
+      var db   = firebase.database();
+
+      // If already logged in before this page loaded, redirect to dashboard.
+      // We use a flag so that when WE create a new account below,
+      // the onAuthStateChanged callback does NOT redirect prematurely
+      // (the redirect only happens after the DB write completes).
+      var signingUp = false;
+      auth.onAuthStateChanged(function (user) {
+        if (user && !signingUp) window.location.href = (window.APP_BASE || '') + '/index.html';
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        msg.style.display = 'none';
+
+        var email    = document.getElementById('reg-email').value.trim();
+        var password = document.getElementById('reg-password').value;
+        var confirm  = document.getElementById('reg-confirm').value;
+        var role     = document.getElementById('reg-role').value;
+
+        // Validation
+        if (password !== confirm) { showMsg('Passwords do not match.', true); return; }
+        if (password.length < 6)  { showMsg('Password must be at least 6 characters.', true); return; }
+        if (!role)                 { showMsg('Please select a role.', true); return; }
+
+        btnReg.disabled = true;
+        btnReg.textContent = 'Creating account…';
+        signingUp = true;  // block onAuthStateChanged redirect during signup
+
+        // Step 1 — Create Firebase Auth account
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(function (cred) {
+            var user = cred.user;
+
+            // Step 2 — Save user data (including selected role) to Realtime Database
+            return db.ref('users/' + user.uid).set({
+              email: user.email,
+              role:  role,
+              name:  user.email.split('@')[0],
+              createdAt: firebase.database.ServerValue.TIMESTAMP
+            });
+          })
+          .then(function () {
+            // Step 3 — DB write confirmed; now safe to redirect
+            window.location.href = (window.APP_BASE || '') + '/index.html';
+          })
+          .catch(function (err) {
+            signingUp = false;
+            showMsg(err.message || 'Registration failed. Please try again.', true);
+            btnReg.disabled = false;
+            btnReg.textContent = 'Create account';
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

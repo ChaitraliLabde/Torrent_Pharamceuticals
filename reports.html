@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports | Torrent Pharma MIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+    .report-section { margin-bottom: 2rem; }
+    .filter-bar { margin-bottom: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .filter-bar select, .filter-bar input { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; }
+    .btn-export { margin-left: auto; padding: 0.45rem 0.8rem; border: 1px solid var(--border); background: #fff; color: var(--primary); border-radius: var(--radius); cursor: pointer; font-size: 0.84rem; font-weight: 600; }
+    .btn-export:hover { background: #eef3ff; }
+    .achieve-ok { color: var(--success); }
+    .achieve-low { color: #c62828; }
+
+    /* Target-setting panel (admin only) */
+    #admin-target-panel { border: 2px solid var(--primary); }
+    #admin-target-panel h2 { display: flex; align-items: center; gap: 0.5rem; }
+    #admin-target-panel h2 .badge { background: var(--primary); color: white; font-size: 0.7rem;
+      padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 700; letter-spacing: 0.05em; }
+    .target-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.85rem; margin-bottom: 1rem; }
+    .target-form-grid .form-group { margin: 0; }
+    .target-form-grid label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-muted); }
+    .target-form-grid input, .target-form-grid select { width: 100%; padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; }
+    .btn-set-target { padding: 0.6rem 1.3rem; background: var(--primary); color: white; border: none;
+      border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.95rem; }
+    .btn-set-target:hover { background: var(--primary-light); }
+    .btn-set-target:disabled { opacity: 0.5; cursor: not-allowed; }
+    .target-save-msg { margin-top: 0.6rem; padding: 0.45rem 0.75rem; border-radius: var(--radius);
+      font-size: 0.88rem; display: none; }
+    .target-save-msg.success { background: #e8f5e9; color: var(--success); }
+    .target-save-msg.error   { background: #ffebee; color: #c62828; }
+    .existing-targets-wrap { margin-top: 1.25rem; }
+    .existing-targets-wrap h3 { font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS — Reports</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="data-entry.html">Data Entry</a>
+      <a href="reports.html" class="active">Reports</a>
+      <a href="decision-support.html">Decision Support</a>
+      <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">Reports</h1>
+
+    <!-- Admin-only: Set Monthly Targets -->
+    <div id="admin-target-panel" class="report-section card" style="display:none;">
+      <h2>Set Monthly Target <span class="badge">ADMIN</span></h2>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1rem;">
+        Set region-wise or product-wise sales targets. These targets are visible to all users in the Target vs Achievement report.
+      </p>
+      <form id="target-set-form">
+        <div class="target-form-grid">
+          <div class="form-group">
+            <label for="t-period">Month *</label>
+            <select id="t-period"></select>
+          </div>
+          <div class="form-group">
+            <label for="t-type">Target Type *</label>
+            <select id="t-type">
+              <option value="region">Region-wise</option>
+              <option value="product">Product-wise</option>
+            </select>
+          </div>
+          <div class="form-group" id="t-region-group">
+            <label for="t-region">Region *</label>
+            <select id="t-region">
+              <option value="">Select</option>
+              <option value="North">North</option>
+              <option value="South">South</option>
+              <option value="East">East</option>
+              <option value="West">West</option>
+              <option value="All">All Regions (Overall)</option>
+            </select>
+          </div>
+          <div class="form-group" id="t-product-group" style="display:none;">
+            <label for="t-product">Product *</label>
+            <select id="t-product">
+              <option value="">Select</option>
+              <option value="Shelcal HD">Shelcal HD</option>
+              <option value="Dynapar AQ">Dynapar AQ</option>
+              <option value="Telmikind">Telmikind</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="t-value">Target Value (₹ Lakhs) *</label>
+            <input type="number" id="t-value" min="0" step="0.01" placeholder="e.g. 300">
+          </div>
+          <div class="form-group">
+            <label for="t-note">Note (optional)</label>
+            <input type="text" id="t-note" placeholder="e.g. Q1 stretch target">
+          </div>
+        </div>
+        <button type="submit" class="btn-set-target" id="btn-set-target">Save Target</button>
+        <div id="target-set-msg" class="target-save-msg"></div>
+      </form>
+
+      <div class="existing-targets-wrap">
+        <h3>Targets already set — <span id="existing-targets-month"></span></h3>
+        <div id="existing-targets-list" class="table-wrap"></div>
+      </div>
+    </div>
+
+    <div class="report-section card">
+      <h2>Target vs Achievement</h2>
+      <div class="filter-bar">
+        <label>Month:</label>
+        <select id="target-month"></select>
+        <button type="button" id="btn-export-target" class="btn-export">Export CSV</button>
+      </div>
+      <div id="target-content" class="table-wrap"></div>
+    </div>
+
+    <div class="report-section card">
+      <h2>Product-wise Sales</h2>
+      <div class="filter-bar">
+        <label>Month:</label>
+        <select id="product-month"></select>
+        <button type="button" id="btn-export-product" class="btn-export">Export CSV</button>
+      </div>
+      <div id="product-content" class="table-wrap"></div>
+    </div>
+
+    <div class="report-section card">
+      <h2>Region-wise Sales</h2>
+      <div class="filter-bar">
+        <label>Month:</label>
+        <select id="region-month"></select>
+        <button type="button" id="btn-export-region" class="btn-export">Export CSV</button>
+      </div>
+      <div id="region-content" class="table-wrap"></div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      document.body.style.opacity = '0';
+
+      var currentUser = null;
+      var currentUserName = '';
+      var currentRole = '';
+      var exportCache = { target: [], product: [], region: [] };
+
+      requireRole(['admin', 'manager'], true).then(function (ctx) {
+        document.body.style.opacity = '1';
+        currentUser = ctx.user;
+        currentRole = ctx.role;
+        if (currentUser) document.getElementById('profile-link').title = currentUser.email;
+        document.getElementById('btn-logout').onclick = signOut;
+
+        // Load display name from DB
+        db.ref('users/' + currentUser.uid).once('value').then(function (snap) {
+          currentUserName = (snap.exists() && snap.val().name) ? snap.val().name : currentUser.email.split('@')[0];
+        });
+
+        // Show admin target panel only for admins
+        if (currentRole === 'admin') {
+          document.getElementById('admin-target-panel').style.display = '';
+          initAdminTargetPanel();
+        }
+
+      }).catch(function () {
+        var u = getCurrentUser();
+        if (!u) { window.location.href = (window.APP_BASE || '') + '/login.html'; return; }
+        document.querySelector('main').innerHTML =
+          '<div class="card" style="text-align:center;padding:2rem;">' +
+          '<h2>Access Denied</h2>' +
+          '<p>Reports are only available to <strong>Admin</strong> and <strong>Manager</strong> roles.</p>' +
+          '<p>Your current role: <strong>' + (getCurrentUserRole() || 'sales_exec') + '</strong></p>' +
+          '<p><a href="index.html">Return to Dashboard</a></p>' +
+          '</div>';
+        document.body.style.opacity = '1';
+        if (u) document.getElementById('profile-link').title = u.email;
+        document.getElementById('btn-logout').onclick = signOut;
+      });
+
+      // ── Month option helpers ───────────────────────────────────────────────
+
+      function monthOptions(selectedVal) {
+        var html = '', d = new Date();
+        for (var i = 0; i < 12; i++) {
+          var y = d.getFullYear(), m = d.getMonth() - i;
+          if (m < 0) { m += 12; y--; }
+          var val = y + '-' + ('0' + (m + 1)).slice(-2);
+          var sel = (val === selectedVal) ? ' selected' : '';
+          html += '<option value="' + val + '"' + sel + '>' + val + '</option>';
+        }
+        return html;
+      }
+
+      function escapeCSV(val) {
+        var s = String(val == null ? '' : val);
+        if (s.indexOf('"') !== -1) s = s.replace(/"/g, '""');
+        return /[",\n]/.test(s) ? '"' + s + '"' : s;
+      }
+
+      function downloadCsv(filename, headers, rows) {
+        if (!rows || !rows.length) { alert('No data to export for selected month.'); return; }
+        var csv = headers.map(escapeCSV).join(',') + '\n'
+          + rows.map(function (r) { return r.map(escapeCSV).join(','); }).join('\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // For planning targets, admins usually set for current/future months.
+      function monthOptionsFuture(selectedVal) {
+        var html = '', d = new Date();
+        for (var i = 0; i < 12; i++) {
+          var y = d.getFullYear(), m = d.getMonth() + i;
+          if (m > 11) { y += Math.floor(m / 12); m = m % 12; }
+          var val = y + '-' + ('0' + (m + 1)).slice(-2);
+          var sel = (val === selectedVal) ? ' selected' : '';
+          html += '<option value="' + val + '"' + sel + '>' + val + '</option>';
+        }
+        return html;
+      }
+
+      var currentMonthKey = (function () {
+        var d = new Date();
+        return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+      })();
+
+      ['target-month', 'product-month', 'region-month'].forEach(function (id) {
+        document.getElementById(id).innerHTML = monthOptions(currentMonthKey);
+      });
+
+      // ── Admin: Set Target panel ────────────────────────────────────────────
+
+      function initAdminTargetPanel() {
+        document.getElementById('t-period').innerHTML = monthOptionsFuture(currentMonthKey);
+
+        // Toggle region/product field based on target type
+        document.getElementById('t-type').addEventListener('change', function () {
+          var isProduct = this.value === 'product';
+          document.getElementById('t-region-group').style.display  = isProduct ? 'none' : '';
+          document.getElementById('t-product-group').style.display = isProduct ? '' : 'none';
+        });
+
+        // Reload existing targets when period changes
+        document.getElementById('t-period').addEventListener('change', function () {
+          loadExistingTargets(this.value);
+        });
+
+        loadExistingTargets(currentMonthKey);
+
+        document.getElementById('target-set-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var period  = document.getElementById('t-period').value;
+          var type    = document.getElementById('t-type').value;
+          var region  = type === 'region'  ? document.getElementById('t-region').value  : '';
+          var product = type === 'product' ? document.getElementById('t-product').value : '';
+          var value   = parseFloat(document.getElementById('t-value').value);
+          var note    = document.getElementById('t-note').value.trim();
+
+          if (!period || (type === 'region' && !region) || (type === 'product' && !product) || isNaN(value) || value < 0) {
+            showTargetMsg('Please fill all required fields with valid values.', true);
+            return;
+          }
+
+          var btn = document.getElementById('btn-set-target');
+          btn.disabled = true;
+          btn.textContent = 'Saving…';
+
+          var record = {
+            period:          period,
+            region:          region,
+            product:         product,
+            targetValue:     value,
+            note:            note || null,
+            setBy:           currentUser.uid,
+            setByEmail:      currentUser.email,
+            setByName:       currentUserName || currentUser.email.split('@')[0],
+            setAt:           firebase.database.ServerValue.TIMESTAMP
+          };
+
+          db.ref('targets').push(record)
+            .then(function () {
+              showTargetMsg('Target saved successfully!', false);
+              document.getElementById('target-set-form').reset();
+              document.getElementById('t-period').innerHTML = monthOptionsFuture(period);
+              document.getElementById('t-period').value = period;
+              document.getElementById('t-region-group').style.display  = '';
+              document.getElementById('t-product-group').style.display = 'none';
+              btn.disabled = false;
+              btn.textContent = 'Save Target';
+              loadExistingTargets(period);
+              renderTarget(); // refresh the Target vs Achievement table
+            })
+            .catch(function (err) {
+              showTargetMsg(err.message || 'Failed to save target.', true);
+              btn.disabled = false;
+              btn.textContent = 'Save Target';
+            });
+        });
+      }
+
+      function showTargetMsg(text, isError) {
+        var el = document.getElementById('target-set-msg');
+        el.textContent = text;
+        el.className = 'target-save-msg ' + (isError ? 'error' : 'success');
+        el.style.display = 'block';
+        setTimeout(function () { el.style.display = 'none'; }, 4000);
+      }
+
+      function loadExistingTargets(period) {
+        document.getElementById('existing-targets-month').textContent = period;
+        var wrap = document.getElementById('existing-targets-list');
+        wrap.innerHTML = '<em style="color:var(--text-muted);font-size:0.85rem;">Loading…</em>';
+        db.ref('targets').once('value').then(function (snap) {
+          var val = snap.val();
+          var rows = [];
+          if (val) {
+            Object.keys(val).forEach(function (k) {
+              var t = val[k];
+              if (t.period === period) rows.push({ key: k, data: t });
+            });
+          }
+          if (!rows.length) {
+            wrap.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No targets set for ' + period + ' yet.</p>';
+            return;
+          }
+          var tr = rows.map(function (r) {
+            var t = r.data;
+            var label = t.region ? 'Region: ' + t.region : (t.product ? 'Product: ' + t.product : '—');
+            var setBy = t.setByName || t.setByEmail || '—';
+            var setAt = t.setAt ? new Date(t.setAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+            var noteCell = t.note ? ('<em>' + t.note + '</em>') : '—';
+            return '<tr><td>' + label + '</td><td>₹ ' + (t.targetValue || 0).toFixed(2) + ' Lakhs</td><td>' + setBy + '</td><td>' + setAt + '</td><td>' + noteCell + '</td></tr>';
+          }).join('');
+          wrap.innerHTML = '<table><thead><tr><th>Target For</th><th>Value (₹ Lakhs)</th><th>Set By</th><th>Date</th><th>Note</th></tr></thead><tbody>' + tr + '</tbody></table>';
+        }).catch(function () {
+          wrap.innerHTML = '<p style="color:#c62828;">Failed to load existing targets.</p>';
+        });
+      }
+
+      // ── Reports: data helpers ──────────────────────────────────────────────
+
+      function getSalesForMonth(monthKey, done) {
+        if (typeof db === 'undefined') { done([]); return; }
+        db.ref('sales_entries').once('value')
+          .then(function (snap) {
+            var val = snap.val(), list = [];
+            if (val) Object.keys(val).forEach(function (k) {
+              var x = val[k];
+              if ((x.date || '').slice(0, 7) === monthKey) list.push(x);
+            });
+            done(list);
+          }).catch(function () { done([]); });
+      }
+
+      function getTargetsForMonth(monthKey, done) {
+        if (typeof db === 'undefined') { done([]); return; }
+        db.ref('targets').once('value')
+          .then(function (snap) {
+            var val = snap.val(), list = [];
+            if (val) Object.keys(val).forEach(function (k) {
+              var x = val[k];
+              if (x.period === monthKey) list.push(x);
+            });
+            done(list);
+          }).catch(function () { done([]); });
+      }
+
+      // ── Reports: render functions ──────────────────────────────────────────
+
+      function renderTarget() {
+        var month = document.getElementById('target-month').value;
+        getSalesForMonth(month, function (rows) {
+          var byRegion = {};
+          rows.forEach(function (r) {
+            byRegion[r.region || 'Other'] = (byRegion[r.region || 'Other'] || 0) + (r.value || 0);
+          });
+          getTargetsForMonth(month, function (targets) {
+            var regionTargetMap = {};
+            targets.forEach(function (t) {
+              if (t.region) regionTargetMap[t.region] = (regionTargetMap[t.region] || 0) + (t.targetValue || 0);
+            });
+            var totalTarget = targets.reduce(function (s, t) { return s + (t.targetValue || 0); }, 0);
+            var totalActual = rows.reduce(function (s, r) { return s + (r.value || 0); }, 0);
+            var allRegions = Object.keys(Object.assign({}, byRegion, regionTargetMap)).sort();
+            var regionRows = allRegions.map(function (r) {
+              var actual = byRegion[r] || 0;
+              var target = regionTargetMap[r] || 0;
+              var pct = target ? ((actual / target) * 100).toFixed(1) + '%' : '—';
+              var cls = target && actual >= target ? 'achieve-ok' : 'achieve-low';
+              return '<tr><td>' + r + '</td><td>₹ ' + actual.toFixed(2) + '</td><td>' + (target ? '₹ ' + target.toFixed(2) : '—') + '</td><td class="' + cls + '">' + pct + '</td></tr>';
+            });
+            var totalPct = totalTarget ? ((totalActual / totalTarget) * 100).toFixed(1) + '%' : '—';
+            var totalCls = totalTarget && totalActual >= totalTarget ? 'achieve-ok' : 'achieve-low';
+            exportCache.target = allRegions.map(function (r) {
+              var actual = byRegion[r] || 0;
+              var target = regionTargetMap[r] || 0;
+              var pct = target ? ((actual / target) * 100).toFixed(1) + '%' : '—';
+              return [month, r, actual.toFixed(2), target ? target.toFixed(2) : '', pct];
+            }).concat([[month, 'Total', totalActual.toFixed(2), totalTarget ? totalTarget.toFixed(2) : '', totalPct]]);
+            document.getElementById('target-content').innerHTML =
+              '<table><thead><tr><th>Region</th><th>Achievement (₹ Lakhs)</th><th>Target (₹ Lakhs)</th><th>%</th></tr></thead><tbody>'
+              + (regionRows.join('') || '<tr><td colspan="4" style="color:var(--text-muted)">No sales data for this month.</td></tr>')
+              + '<tr><td><strong>Total</strong></td><td>₹ ' + totalActual.toFixed(2) + '</td><td>' + (totalTarget ? '₹ ' + totalTarget.toFixed(2) : '—') + '</td><td class="' + totalCls + '">' + totalPct + '</td></tr>'
+              + '</tbody></table>';
+          });
+        });
+      }
+
+      function renderProduct() {
+        var month = document.getElementById('product-month').value;
+        getSalesForMonth(month, function (rows) {
+          var byProduct = {};
+          rows.forEach(function (r) { var p = r.product || 'Other'; byProduct[p] = (byProduct[p] || 0) + (r.value || 0); });
+          var total = 0;
+          var tr = Object.keys(byProduct).sort().map(function (p) {
+            total += byProduct[p];
+            return '<tr><td>' + p + '</td><td>₹ ' + byProduct[p].toFixed(2) + ' Lakhs</td></tr>';
+          }).join('');
+          exportCache.product = Object.keys(byProduct).sort().map(function (p) {
+            return [month, p, byProduct[p].toFixed(2)];
+          }).concat([[month, 'Total', total.toFixed(2)]]);
+          document.getElementById('product-content').innerHTML =
+            '<table><thead><tr><th>Product</th><th>Value (₹ Lakhs)</th></tr></thead><tbody>'
+            + (tr || '<tr><td colspan="2" style="color:var(--text-muted)">No data.</td></tr>')
+            + '<tr><td><strong>Total</strong></td><td>₹ ' + total.toFixed(2) + '</td></tr></tbody></table>';
+        });
+      }
+
+      function renderRegion() {
+        var month = document.getElementById('region-month').value;
+        getSalesForMonth(month, function (rows) {
+          var byRegion = {};
+          rows.forEach(function (r) { var reg = r.region || 'Other'; byRegion[reg] = (byRegion[reg] || 0) + (r.value || 0); });
+          var total = 0;
+          var tr = Object.keys(byRegion).sort().map(function (r) {
+            total += byRegion[r];
+            return '<tr><td>' + r + '</td><td>₹ ' + byRegion[r].toFixed(2) + ' Lakhs</td></tr>';
+          }).join('');
+          exportCache.region = Object.keys(byRegion).sort().map(function (r) {
+            return [month, r, byRegion[r].toFixed(2)];
+          }).concat([[month, 'Total', total.toFixed(2)]]);
+          document.getElementById('region-content').innerHTML =
+            '<table><thead><tr><th>Region</th><th>Value (₹ Lakhs)</th></tr></thead><tbody>'
+            + (tr || '<tr><td colspan="2" style="color:var(--text-muted)">No data.</td></tr>')
+            + '<tr><td><strong>Total</strong></td><td>₹ ' + total.toFixed(2) + '</td></tr></tbody></table>';
+        });
+      }
+
+      document.getElementById('target-month').addEventListener('change', renderTarget);
+      document.getElementById('product-month').addEventListener('change', renderProduct);
+      document.getElementById('region-month').addEventListener('change', renderRegion);
+      document.getElementById('btn-export-target').addEventListener('click', function () {
+        var month = document.getElementById('target-month').value;
+        downloadCsv('target-vs-achievement-' + month + '.csv', ['Month', 'Region', 'Achievement (Lakhs)', 'Target (Lakhs)', 'Achievement %'], exportCache.target);
+      });
+      document.getElementById('btn-export-product').addEventListener('click', function () {
+        var month = document.getElementById('product-month').value;
+        downloadCsv('product-sales-' + month + '.csv', ['Month', 'Product', 'Value (Lakhs)'], exportCache.product);
+      });
+      document.getElementById('btn-export-region').addEventListener('click', function () {
+        var month = document.getElementById('region-month').value;
+        downloadCsv('region-sales-' + month + '.csv', ['Month', 'Region', 'Value (Lakhs)'], exportCache.region);
+      });
+
+      appReady.then(function () {
+        renderTarget();
+        renderProduct();
+        renderRegion();
+      });
+    })();
+  </script>
+</body>
+</html>

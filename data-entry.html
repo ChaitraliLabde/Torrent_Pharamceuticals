@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Entry | Torrent Pharma MIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted); }
+    .form-group input, .form-group select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; }
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: white; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .tabs a { padding: 0.5rem 1rem; background: var(--border); border-radius: var(--radius); text-decoration: none; color: var(--text); }
+    .tabs a.active { background: var(--primary); color: white; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .save-msg { margin-top: 0.75rem; padding: 0.5rem; border-radius: var(--radius); font-size: 0.9rem; display: none; }
+    .save-msg.success { background: #e8f5e9; color: var(--success); }
+    .save-msg.error { background: #ffebee; color: #c62828; }
+    .sub-title { margin-top: 1.25rem; margin-bottom: 0.6rem; font-size: 0.9rem; color: var(--text-muted); }
+    .list-note { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+    .action-btn { border: 1px solid var(--border); background: #fff; border-radius: var(--radius); padding: 0.28rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .action-btn.edit { color: var(--primary); }
+    .action-btn.delete { color: #c62828; }
+    .empty-row { color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    .edit-panel { margin-top: 0.9rem; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem; background: #fafbff; display: none; }
+    .edit-panel h4 { margin-bottom: 0.65rem; color: var(--text-muted); font-size: 0.88rem; }
+    .edit-actions { display: flex; gap: 0.55rem; }
+    .btn-secondary { background: #eceff1; color: #37474f; }
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS — Data Entry</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="data-entry.html" class="active">Data Entry</a>
+      <a href="reports.html">Reports</a>
+      <a href="decision-support.html">Decision Support</a>
+      <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">Daily Data Entry</h1>
+    <div class="tabs">
+      <a href="#" class="tab-link active" data-tab="sales">Sales Entry</a>
+      <a href="#" class="tab-link" data-tab="visits">Doctor Visits</a>
+    </div>
+
+    <div id="tab-sales" class="tab-pane active card">
+      <h2>Daily Sales</h2>
+      <form id="sales-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="s-date">Date *</label>
+            <input type="date" id="s-date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="s-region">Region *</label>
+            <select id="s-region" name="region" required>
+              <option value="">Select</option>
+              <option value="North">North</option>
+              <option value="South">South</option>
+              <option value="East">East</option>
+              <option value="West">West</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="s-product">Product *</label>
+            <select id="s-product" name="product" required>
+              <option value="">Select</option>
+              <option value="Shelcal HD">Shelcal HD</option>
+              <option value="Dynapar AQ">Dynapar AQ</option>
+              <option value="Telmikind">Telmikind</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="s-quantity">Quantity (units) *</label>
+            <input type="number" id="s-quantity" name="quantity" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="s-value">Value (₹ Lakhs) *</label>
+            <input type="number" id="s-value" name="value" min="0" step="0.01" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Sales</button>
+        <div id="sales-msg" class="save-msg"></div>
+      </form>
+      <div id="sales-edit-panel" class="edit-panel">
+        <h4>Edit Sales Entry</h4>
+        <form id="sales-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="se-date">Date *</label>
+              <input type="date" id="se-date" required>
+            </div>
+            <div class="form-group">
+              <label for="se-region">Region *</label>
+              <select id="se-region" required>
+                <option value="">Select</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="se-product">Product *</label>
+              <select id="se-product" required>
+                <option value="">Select</option>
+                <option value="Shelcal HD">Shelcal HD</option>
+                <option value="Dynapar AQ">Dynapar AQ</option>
+                <option value="Telmikind">Telmikind</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="se-quantity">Quantity *</label>
+              <input type="number" id="se-quantity" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="se-value">Value (₹ Lakhs) *</label>
+              <input type="number" id="se-value" min="0" step="0.01" required>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Sales</button>
+            <button type="button" class="btn btn-secondary" id="sales-edit-cancel">Cancel</button>
+          </div>
+          <div id="sales-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+      <h3 class="sub-title">Manage Sales Entries</h3>
+      <p class="list-note">You can edit/delete your own entries. Admin can manage all entries.</p>
+      <div id="sales-list" class="table-wrap"></div>
+    </div>
+
+    <div id="tab-visits" class="tab-pane card">
+      <h2>Doctor Visits</h2>
+      <form id="visits-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="v-date">Date *</label>
+            <input type="date" id="v-date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="v-doctor">Doctor / Hospital Name *</label>
+            <input type="text" id="v-doctor" name="doctorName" required placeholder="Dr. Name or Hospital">
+          </div>
+          <div class="form-group">
+            <label for="v-region">Region *</label>
+            <select id="v-region" name="region" required>
+              <option value="">Select</option>
+              <option value="North">North</option>
+              <option value="South">South</option>
+              <option value="East">East</option>
+              <option value="West">West</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="v-remarks">Remarks (optional)</label>
+            <input type="text" id="v-remarks" name="remarks" placeholder="Brief notes">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Visit</button>
+        <div id="visits-msg" class="save-msg"></div>
+      </form>
+      <div id="visits-edit-panel" class="edit-panel">
+        <h4>Edit Doctor Visit</h4>
+        <form id="visits-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="ve-date">Date *</label>
+              <input type="date" id="ve-date" required>
+            </div>
+            <div class="form-group">
+              <label for="ve-doctor">Doctor / Hospital Name *</label>
+              <input type="text" id="ve-doctor" required>
+            </div>
+            <div class="form-group">
+              <label for="ve-region">Region *</label>
+              <select id="ve-region" required>
+                <option value="">Select</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="ve-remarks">Remarks</label>
+              <input type="text" id="ve-remarks">
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Visit</button>
+            <button type="button" class="btn btn-secondary" id="visits-edit-cancel">Cancel</button>
+          </div>
+          <div id="visits-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+      <h3 class="sub-title">Manage Doctor Visits</h3>
+      <p class="list-note">You can edit/delete your own entries. Admin can manage all entries.</p>
+      <div id="visits-list" class="table-wrap"></div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      var REGIONS = ['North','South','East','West'];
+      var PRODUCTS = ['Shelcal HD','Dynapar AQ','Telmikind','Other'];
+
+      var currentUserName = '';
+      var currentUserRole = '';
+      var currentUserId = '';
+      var editingSalesId = null;
+      var editingVisitId = null;
+
+      requireRole(['admin', 'manager', 'sales_exec']).then(function (ctx) {
+        var role = ctx.role;
+        var u    = ctx.user;
+        currentUserRole = role || 'sales_exec';
+        currentUserId = u.uid;
+        document.querySelectorAll('nav a[href="reports.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="decision-support.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        if (u) document.getElementById('profile-link').title = u.email;
+        document.getElementById('btn-logout').onclick = signOut;
+
+        // Load the user's display name from their profile in the database
+        db.ref('users/' + u.uid).once('value').then(function (snap) {
+          if (snap.exists() && snap.val().name) {
+            currentUserName = snap.val().name;
+          } else {
+            currentUserName = u.email.split('@')[0];
+          }
+        });
+        loadSalesList();
+        loadVisitsList();
+      });
+
+      document.querySelectorAll('.tab-link').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+          document.querySelectorAll('.tab-link').forEach(function (l) { l.classList.remove('active'); });
+          document.getElementById('tab-' + a.dataset.tab).classList.add('active');
+          a.classList.add('active');
+        });
+      });
+
+      function setToday(id) {
+        var d = new Date();
+        var y = d.getFullYear(), m = ('0' + (d.getMonth() + 1)).slice(-2), day = ('0' + d.getDate()).slice(-2);
+        var el = document.getElementById(id);
+        if (el && !el.value) el.value = y + '-' + m + '-' + day;
+      }
+      setToday('s-date');
+      setToday('v-date');
+
+      function showMsg(id, text, isError) {
+        var el = document.getElementById(id);
+        el.textContent = text;
+        el.className = 'save-msg ' + (isError ? 'error' : 'success');
+        el.style.display = 'block';
+        setTimeout(function () { el.style.display = 'none'; }, 4000);
+      }
+
+      function closeSalesEditor() {
+        editingSalesId = null;
+        document.getElementById('sales-edit-panel').style.display = 'none';
+      }
+
+      function closeVisitsEditor() {
+        editingVisitId = null;
+        document.getElementById('visits-edit-panel').style.display = 'none';
+      }
+
+      function openSalesEditor(id, row) {
+        editingSalesId = id;
+        document.getElementById('se-date').value = row.date || '';
+        document.getElementById('se-region').value = row.region || '';
+        document.getElementById('se-product').value = row.product || '';
+        document.getElementById('se-quantity').value = row.quantity || 1;
+        document.getElementById('se-value').value = row.value || 0;
+        document.getElementById('sales-edit-panel').style.display = 'block';
+      }
+
+      function openVisitsEditor(id, row) {
+        editingVisitId = id;
+        document.getElementById('ve-date').value = row.date || '';
+        document.getElementById('ve-doctor').value = row.doctorName || '';
+        document.getElementById('ve-region').value = row.region || '';
+        document.getElementById('ve-remarks').value = row.remarks || '';
+        document.getElementById('visits-edit-panel').style.display = 'block';
+      }
+
+      function canManageRecord(rec) {
+        return currentUserRole === 'admin' || (rec && rec.enteredBy === currentUserId);
+      }
+
+      function rowActions(type, key, rec) {
+        if (!canManageRecord(rec)) return '—';
+        return ''
+          + '<button class="action-btn edit" data-type="' + type + '" data-key="' + key + '" data-action="edit">Edit</button> '
+          + '<button class="action-btn delete" data-type="' + type + '" data-key="' + key + '" data-action="delete">Delete</button>';
+      }
+
+      function loadSalesList() {
+        var wrap = document.getElementById('sales-list');
+        wrap.innerHTML = '<div class="loading">Loading…</div>';
+        db.ref('sales_entries').once('value').then(function (snap) {
+          var rows = [];
+          var val = snap.val();
+          if (val) Object.keys(val).forEach(function (k) {
+            rows.push({ id: k, data: val[k] });
+          });
+          rows.sort(function (a, b) { return (b.data.enteredAt || 0) - (a.data.enteredAt || 0); });
+          var visible = rows.filter(function (r) { return currentUserRole === 'admin' || r.data.enteredBy === currentUserId; }).slice(0, 20);
+          if (!visible.length) {
+            wrap.innerHTML = '<table><tbody><tr><td class="empty-row">No sales entries yet.</td></tr></tbody></table>';
+            return;
+          }
+          var tr = visible.map(function (r) {
+            var x = r.data;
+            return '<tr>'
+              + '<td>' + (x.date || '—') + '</td>'
+              + '<td>' + (x.region || '—') + '</td>'
+              + '<td>' + (x.product || '—') + '</td>'
+              + '<td>' + (x.quantity || 0) + '</td>'
+              + '<td>₹ ' + Number(x.value || 0).toFixed(2) + '</td>'
+              + '<td>' + (x.enteredByName || x.enteredByEmail || '—') + '</td>'
+              + '<td>' + rowActions('sale', r.id, x) + '</td>'
+              + '</tr>';
+          }).join('');
+          wrap.innerHTML = '<table><thead><tr><th>Date</th><th>Region</th><th>Product</th><th>Qty</th><th>Value</th><th>Entered By</th><th>Actions</th></tr></thead><tbody>' + tr + '</tbody></table>';
+        });
+      }
+
+      function loadVisitsList() {
+        var wrap = document.getElementById('visits-list');
+        wrap.innerHTML = '<div class="loading">Loading…</div>';
+        db.ref('doctor_visits').once('value').then(function (snap) {
+          var rows = [];
+          var val = snap.val();
+          if (val) Object.keys(val).forEach(function (k) {
+            rows.push({ id: k, data: val[k] });
+          });
+          rows.sort(function (a, b) { return (b.data.enteredAt || 0) - (a.data.enteredAt || 0); });
+          var visible = rows.filter(function (r) { return currentUserRole === 'admin' || r.data.enteredBy === currentUserId; }).slice(0, 20);
+          if (!visible.length) {
+            wrap.innerHTML = '<table><tbody><tr><td class="empty-row">No doctor visits yet.</td></tr></tbody></table>';
+            return;
+          }
+          var tr = visible.map(function (r) {
+            var x = r.data;
+            return '<tr>'
+              + '<td>' + (x.date || '—') + '</td>'
+              + '<td>' + (x.doctorName || '—') + '</td>'
+              + '<td>' + (x.region || '—') + '</td>'
+              + '<td>' + (x.remarks || '—') + '</td>'
+              + '<td>' + (x.enteredByName || x.enteredByEmail || '—') + '</td>'
+              + '<td>' + rowActions('visit', r.id, x) + '</td>'
+              + '</tr>';
+          }).join('');
+          wrap.innerHTML = '<table><thead><tr><th>Date</th><th>Doctor/Hospital</th><th>Region</th><th>Remarks</th><th>Entered By</th><th>Actions</th></tr></thead><tbody>' + tr + '</tbody></table>';
+        });
+      }
+
+      document.getElementById('sales-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var date = document.getElementById('s-date').value;
+        var region = document.getElementById('s-region').value;
+        var product = document.getElementById('s-product').value;
+        var qty = parseInt(document.getElementById('s-quantity').value, 10);
+        var value = parseFloat(document.getElementById('s-value').value);
+        if (!date || !region || !product || qty < 1 || value < 0) {
+          showMsg('sales-msg', 'Please fill all required fields with valid values.', true);
+          return;
+        }
+        var user = getCurrentUser();
+        if (!user) { showMsg('sales-msg', 'Not logged in.', true); return; }
+        db.ref('sales_entries').push({
+          date: date,
+          region: region,
+          product: product,
+          quantity: qty,
+          value: value,
+          enteredBy: user.uid,
+          enteredByEmail: user.email,
+          enteredByName: currentUserName || user.email.split('@')[0],
+          enteredAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(function () {
+          showMsg('sales-msg', 'Sales entry saved.', false);
+          e.target.reset();
+          setToday('s-date');
+          loadSalesList();
+        }).catch(function (err) {
+          showMsg('sales-msg', err.message || 'Failed to save.', true);
+        });
+      });
+
+      document.getElementById('visits-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var date = document.getElementById('v-date').value;
+        var doctorName = document.getElementById('v-doctor').value.trim();
+        var region = document.getElementById('v-region').value;
+        var remarks = document.getElementById('v-remarks').value.trim();
+        if (!date || !doctorName || !region) {
+          showMsg('visits-msg', 'Please fill date, doctor/hospital name and region.', true);
+          return;
+        }
+        var user = getCurrentUser();
+        if (!user) { showMsg('visits-msg', 'Not logged in.', true); return; }
+        db.ref('doctor_visits').push({
+          date: date,
+          doctorName: doctorName,
+          region: region,
+          remarks: remarks || null,
+          enteredBy: user.uid,
+          enteredByEmail: user.email,
+          enteredByName: currentUserName || user.email.split('@')[0],
+          enteredAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(function () {
+          showMsg('visits-msg', 'Doctor visit saved.', false);
+          e.target.reset();
+          setToday('v-date');
+          loadVisitsList();
+        }).catch(function (err) {
+          showMsg('visits-msg', err.message || 'Failed to save.', true);
+        });
+      });
+
+      document.getElementById('sales-edit-cancel').addEventListener('click', closeSalesEditor);
+      document.getElementById('visits-edit-cancel').addEventListener('click', closeVisitsEditor);
+
+      document.getElementById('sales-edit-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!editingSalesId) return;
+        var date = document.getElementById('se-date').value;
+        var region = document.getElementById('se-region').value;
+        var product = document.getElementById('se-product').value;
+        var quantity = parseInt(document.getElementById('se-quantity').value, 10);
+        var value = parseFloat(document.getElementById('se-value').value);
+        if (!date || !region || !product || quantity < 1 || value < 0) {
+          showMsg('sales-edit-msg', 'Please enter valid values.', true);
+          return;
+        }
+        db.ref('sales_entries/' + editingSalesId).once('value').then(function (snap) {
+          var row = snap.val();
+          if (!row || !canManageRecord(row)) {
+            showMsg('sales-edit-msg', 'You are not allowed to edit this entry.', true);
+            return;
+          }
+          return db.ref('sales_entries/' + editingSalesId).update({
+            date: date,
+            region: region,
+            product: product,
+            quantity: quantity,
+            value: value,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          }).then(function () {
+            showMsg('sales-msg', 'Sales entry updated.', false);
+            closeSalesEditor();
+            loadSalesList();
+          });
+        }).catch(function (err) {
+          showMsg('sales-edit-msg', err.message || 'Failed to update.', true);
+        });
+      });
+
+      document.getElementById('visits-edit-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!editingVisitId) return;
+        var date = document.getElementById('ve-date').value;
+        var doctorName = document.getElementById('ve-doctor').value.trim();
+        var region = document.getElementById('ve-region').value;
+        var remarks = document.getElementById('ve-remarks').value.trim();
+        if (!date || !doctorName || !region) {
+          showMsg('visits-edit-msg', 'Please enter valid values.', true);
+          return;
+        }
+        db.ref('doctor_visits/' + editingVisitId).once('value').then(function (snap) {
+          var row = snap.val();
+          if (!row || !canManageRecord(row)) {
+            showMsg('visits-edit-msg', 'You are not allowed to edit this entry.', true);
+            return;
+          }
+          return db.ref('doctor_visits/' + editingVisitId).update({
+            date: date,
+            doctorName: doctorName,
+            region: region,
+            remarks: remarks || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          }).then(function () {
+            showMsg('visits-msg', 'Doctor visit updated.', false);
+            closeVisitsEditor();
+            loadVisitsList();
+          });
+        }).catch(function (err) {
+          showMsg('visits-edit-msg', err.message || 'Failed to update.', true);
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        var type = btn.getAttribute('data-type');
+        var key = btn.getAttribute('data-key');
+        var action = btn.getAttribute('data-action');
+        var path = type === 'sale' ? 'sales_entries/' + key : 'doctor_visits/' + key;
+        db.ref(path).once('value').then(function (snap) {
+          var row = snap.val();
+          if (!row) return;
+          if (!canManageRecord(row)) {
+            alert('You are not allowed to modify this entry.');
+            return;
+          }
+          if (action === 'delete') {
+            if (!confirm('Delete this entry?')) return;
+            db.ref(path).remove().then(function () {
+              if (type === 'sale') loadSalesList(); else loadVisitsList();
+            });
+            return;
+          }
+          if (type === 'sale') openSalesEditor(key, row);
+          else openVisitsEditor(key, row);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
