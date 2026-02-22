@@ -1,7 +1,8 @@
 (function () {
   if (typeof window.APP_BASE === 'undefined') {
     var parts = ((typeof location !== 'undefined' && location.pathname) || '').split('/').filter(Boolean);
-    window.APP_BASE = (parts.length >= 2) ? ('/' + parts[0]) : '';
+    var isProjectSite = (parts.length >= 2) || (parts.length === 1 && parts[0].indexOf('.') === -1);
+    window.APP_BASE = isProjectSite ? ('/' + parts[0]) : '';
   }
   var base = window.APP_BASE || '';
   if (typeof firebase === 'undefined') {
