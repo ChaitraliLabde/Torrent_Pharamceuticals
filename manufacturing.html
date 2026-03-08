@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manufacturing MIS | Torrent Pharma</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted); }
+    .form-group input, .form-group select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; }
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: #eceff1; color: #37474f; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tabs a { padding: 0.5rem 1rem; background: var(--border); border-radius: var(--radius); text-decoration: none; color: var(--text); font-size: 0.9rem; }
+    .tabs a.active { background: var(--primary); color: white; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .save-msg { margin-top: 0.75rem; padding: 0.5rem; border-radius: var(--radius); font-size: 0.9rem; display: none; }
+    .save-msg.success { background: #e8f5e9; color: var(--success); }
+    .save-msg.error { background: #ffebee; color: #c62828; }
+    .sub-title { margin-top: 1.25rem; margin-bottom: 0.6rem; font-size: 0.9rem; color: var(--text-muted); }
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+    .filter-bar { margin-bottom: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .filter-bar select { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); }
+    .achieve-ok { color: var(--success); }
+    .achieve-low { color: #c62828; }
+    .report-section { margin-bottom: 1.5rem; }
+    .action-btn { border: 1px solid var(--border); background: #fff; border-radius: var(--radius); padding: 0.28rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .action-btn.edit { color: var(--primary); }
+    .action-btn.delete { color: #c62828; }
+    .empty-row { color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    .edit-panel { margin-top: 0.9rem; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem; background: #fafbff; display: none; }
+    .edit-panel h4 { margin-bottom: 0.65rem; color: var(--text-muted); font-size: 0.88rem; }
+    .edit-actions { display: flex; gap: 0.55rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS — Manufacturing</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="data-entry.html">Data Entry</a>
+      <a href="reports.html">Reports</a>
+      <a href="decision-support.html">Decision Support</a>
+      <a href="manufacturing.html" class="active">Manufacturing</a>
+      <a href="hr.html">HR</a>
+      <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">Manufacturing MIS</h1>
+    <div class="tabs">
+      <a href="#" class="tab-link active" data-tab="planning">Planning &amp; Scheduling</a>
+      <a href="#" class="tab-link" data-tab="batches">Batch Records</a>
+      <a href="#" class="tab-link" data-tab="raw">Raw Material</a>
+      <a href="#" class="tab-link" data-tab="finished">Finished Goods</a>
+      <a href="#" class="tab-link" data-tab="utilization">Machine Utilization</a>
+      <a href="#" class="tab-link" data-tab="target">Target vs Actual</a>
+      <a href="#" class="tab-link" data-tab="performance">Performance Reports</a>
+    </div>
+
+    <div id="tab-planning" class="tab-pane active card">
+      <h2>Production Planning &amp; Scheduling</h2>
+      <form id="planning-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="p-date">Date *</label>
+            <input type="date" id="p-date" required>
+          </div>
+          <div class="form-group">
+            <label for="p-product">Product *</label>
+            <select id="p-product" required>
+              <option value="">Select</option>
+              <option value="Shelcal HD">Shelcal HD</option>
+              <option value="Dynapar AQ">Dynapar AQ</option>
+              <option value="Telmikind">Telmikind</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="p-planned">Planned Quantity *</label>
+            <input type="number" id="p-planned" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="p-line">Line / Shift</label>
+            <select id="p-line">
+              <option value="">Select</option>
+              <option value="Line A">Line A</option>
+              <option value="Line B">Line B</option>
+              <option value="Line C">Line C</option>
+              <option value="Shift 1">Shift 1</option>
+              <option value="Shift 2">Shift 2</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="p-remarks">Remarks</label>
+            <input type="text" id="p-remarks" placeholder="Schedule notes">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Schedule</button>
+        <div id="planning-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Schedule List</h3>
+      <div id="planning-list" class="table-wrap"></div>
+      <div id="planning-edit-panel" class="edit-panel">
+        <h4>Edit Schedule</h4>
+        <form id="planning-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="pe-date">Date *</label>
+              <input type="date" id="pe-date" required>
+            </div>
+            <div class="form-group">
+              <label for="pe-product">Product *</label>
+              <select id="pe-product" required>
+                <option value="">Select</option>
+                <option value="Shelcal HD">Shelcal HD</option>
+                <option value="Dynapar AQ">Dynapar AQ</option>
+                <option value="Telmikind">Telmikind</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pe-planned">Planned Quantity *</label>
+              <input type="number" id="pe-planned" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="pe-line">Line / Shift</label>
+              <select id="pe-line">
+                <option value="">Select</option>
+                <option value="Line A">Line A</option>
+                <option value="Line B">Line B</option>
+                <option value="Line C">Line C</option>
+                <option value="Shift 1">Shift 1</option>
+                <option value="Shift 2">Shift 2</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="pe-remarks">Remarks</label>
+              <input type="text" id="pe-remarks" placeholder="Schedule notes">
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Schedule</button>
+            <button type="button" class="btn btn-secondary" id="planning-edit-cancel">Cancel</button>
+          </div>
+          <div id="planning-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-batches" class="tab-pane card">
+      <h2>Batch-wise Manufacturing Records</h2>
+      <form id="batch-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="b-batch">Batch ID *</label>
+            <input type="text" id="b-batch" required placeholder="e.g. B2024-001">
+          </div>
+          <div class="form-group">
+            <label for="b-product">Product *</label>
+            <select id="b-product" required>
+              <option value="">Select</option>
+              <option value="Shelcal HD">Shelcal HD</option>
+              <option value="Dynapar AQ">Dynapar AQ</option>
+              <option value="Telmikind">Telmikind</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="b-date">Batch Date *</label>
+            <input type="date" id="b-date" required>
+          </div>
+          <div class="form-group">
+            <label for="b-quantity">Quantity Produced *</label>
+            <input type="number" id="b-quantity" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="b-status">Status</label>
+            <select id="b-status">
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Approved">Approved</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="b-remarks">Remarks</label>
+            <input type="text" id="b-remarks" placeholder="Batch notes">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Batch</button>
+        <div id="batch-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Batch Records</h3>
+      <div id="batch-list" class="table-wrap"></div>
+      <div id="batch-edit-panel" class="edit-panel">
+        <h4>Edit Batch</h4>
+        <form id="batch-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="be-batch">Batch ID *</label>
+              <input type="text" id="be-batch" required>
+            </div>
+            <div class="form-group">
+              <label for="be-product">Product *</label>
+              <select id="be-product" required>
+                <option value="">Select</option>
+                <option value="Shelcal HD">Shelcal HD</option>
+                <option value="Dynapar AQ">Dynapar AQ</option>
+                <option value="Telmikind">Telmikind</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="be-date">Batch Date *</label>
+              <input type="date" id="be-date" required>
+            </div>
+            <div class="form-group">
+              <label for="be-quantity">Quantity Produced *</label>
+              <input type="number" id="be-quantity" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="be-status">Status</label>
+              <select id="be-status">
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Approved">Approved</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="be-remarks">Remarks</label>
+              <input type="text" id="be-remarks">
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Batch</button>
+            <button type="button" class="btn btn-secondary" id="batch-edit-cancel">Cancel</button>
+          </div>
+          <div id="batch-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-raw" class="tab-pane card">
+      <h2>Raw Material Consumption Tracking</h2>
+      <form id="raw-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="r-date">Date *</label>
+            <input type="date" id="r-date" required>
+          </div>
+          <div class="form-group">
+            <label for="r-material">Material Name *</label>
+            <input type="text" id="r-material" required placeholder="e.g. API, Excipient">
+          </div>
+          <div class="form-group">
+            <label for="r-batch">Batch ID</label>
+            <input type="text" id="r-batch" placeholder="Batch reference">
+          </div>
+          <div class="form-group">
+            <label for="r-consumed">Quantity Consumed *</label>
+            <input type="number" id="r-consumed" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="r-unit">Unit</label>
+            <select id="r-unit">
+              <option value="kg">kg</option>
+              <option value="L">L</option>
+              <option value="units">units</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Consumption</button>
+        <div id="raw-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Consumption Records</h3>
+      <div id="raw-list" class="table-wrap"></div>
+      <div id="raw-edit-panel" class="edit-panel">
+        <h4>Edit Consumption</h4>
+        <form id="raw-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="re-date">Date *</label>
+              <input type="date" id="re-date" required>
+            </div>
+            <div class="form-group">
+              <label for="re-material">Material Name *</label>
+              <input type="text" id="re-material" required>
+            </div>
+            <div class="form-group">
+              <label for="re-batch">Batch ID</label>
+              <input type="text" id="re-batch">
+            </div>
+            <div class="form-group">
+              <label for="re-consumed">Quantity Consumed *</label>
+              <input type="number" id="re-consumed" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="re-unit">Unit</label>
+              <select id="re-unit">
+                <option value="kg">kg</option>
+                <option value="L">L</option>
+                <option value="units">units</option>
+              </select>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Consumption</button>
+            <button type="button" class="btn btn-secondary" id="raw-edit-cancel">Cancel</button>
+          </div>
+          <div id="raw-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-finished" class="tab-pane card">
+      <h2>Finished Goods Production Reporting</h2>
+      <form id="finished-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="f-date">Date *</label>
+            <input type="date" id="f-date" required>
+          </div>
+          <div class="form-group">
+            <label for="f-product">Product *</label>
+            <select id="f-product" required>
+              <option value="">Select</option>
+              <option value="Shelcal HD">Shelcal HD</option>
+              <option value="Dynapar AQ">Dynapar AQ</option>
+              <option value="Telmikind">Telmikind</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-produced">Quantity Produced *</label>
+            <input type="number" id="f-produced" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="f-line">Line</label>
+            <select id="f-line">
+              <option value="">Select</option>
+              <option value="Line A">Line A</option>
+              <option value="Line B">Line B</option>
+              <option value="Line C">Line C</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Production</button>
+        <div id="finished-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Production Records</h3>
+      <div id="finished-list" class="table-wrap"></div>
+      <div id="finished-edit-panel" class="edit-panel">
+        <h4>Edit Finished Goods</h4>
+        <form id="finished-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fe-date">Date *</label>
+              <input type="date" id="fe-date" required>
+            </div>
+            <div class="form-group">
+              <label for="fe-product">Product *</label>
+              <select id="fe-product" required>
+                <option value="">Select</option>
+                <option value="Shelcal HD">Shelcal HD</option>
+                <option value="Dynapar AQ">Dynapar AQ</option>
+                <option value="Telmikind">Telmikind</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="fe-produced">Quantity Produced *</label>
+              <input type="number" id="fe-produced" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="fe-line">Line</label>
+              <select id="fe-line">
+                <option value="">Select</option>
+                <option value="Line A">Line A</option>
+                <option value="Line B">Line B</option>
+                <option value="Line C">Line C</option>
+              </select>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Production</button>
+            <button type="button" class="btn btn-secondary" id="finished-edit-cancel">Cancel</button>
+          </div>
+          <div id="finished-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-utilization" class="tab-pane card">
+      <h2>Machine / Line Utilization Tracking</h2>
+      <form id="utilization-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="u-date">Date *</label>
+            <input type="date" id="u-date" required>
+          </div>
+          <div class="form-group">
+            <label for="u-machine">Machine / Line *</label>
+            <input type="text" id="u-machine" required placeholder="e.g. Machine M1, Line A">
+          </div>
+          <div class="form-group">
+            <label for="u-hours">Hours Operated *</label>
+            <input type="number" id="u-hours" min="0" max="24" step="0.5" required>
+          </div>
+          <div class="form-group">
+            <label for="u-downtime">Downtime (hours)</label>
+            <input type="number" id="u-downtime" min="0" max="24" step="0.5" value="0">
+          </div>
+          <div class="form-group">
+            <label for="u-shift">Shift</label>
+            <select id="u-shift">
+              <option value="">Select</option>
+              <option value="Shift 1">Shift 1</option>
+              <option value="Shift 2">Shift 2</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Utilization</button>
+        <div id="utilization-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Utilization Records</h3>
+      <div id="utilization-list" class="table-wrap"></div>
+      <div id="utilization-edit-panel" class="edit-panel">
+        <h4>Edit Utilization</h4>
+        <form id="utilization-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="ue-date">Date *</label>
+              <input type="date" id="ue-date" required>
+            </div>
+            <div class="form-group">
+              <label for="ue-machine">Machine / Line *</label>
+              <input type="text" id="ue-machine" required>
+            </div>
+            <div class="form-group">
+              <label for="ue-hours">Hours Operated *</label>
+              <input type="number" id="ue-hours" min="0" max="24" step="0.5" required>
+            </div>
+            <div class="form-group">
+              <label for="ue-downtime">Downtime (hours)</label>
+              <input type="number" id="ue-downtime" min="0" max="24" step="0.5" value="0">
+            </div>
+            <div class="form-group">
+              <label for="ue-shift">Shift</label>
+              <select id="ue-shift">
+                <option value="">Select</option>
+                <option value="Shift 1">Shift 1</option>
+                <option value="Shift 2">Shift 2</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Utilization</button>
+            <button type="button" class="btn btn-secondary" id="utilization-edit-cancel">Cancel</button>
+          </div>
+          <div id="utilization-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-target" class="tab-pane card">
+      <h2>Production Target vs Actual Analysis</h2>
+      <div class="filter-bar">
+        <label>Month:</label>
+        <select id="target-month"></select>
+      </div>
+      <div id="target-content" class="table-wrap"></div>
+    </div>
+
+    <div id="tab-performance" class="tab-pane card">
+      <h2>Manufacturing Performance Reports</h2>
+      <div class="filter-bar">
+        <label>Month:</label>
+        <select id="perf-month"></select>
+      </div>
+      <div id="perf-content"></div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      var currentUserId = '';
+      var currentUserName = '';
+      var currentRole = '';
+      var editingPlanningId = null;
+      var editingBatchId = null;
+      var editingRawId = null;
+      var editingFinishedId = null;
+      var editingUtilizationId = null;
+
+      requireRole(['admin', 'manager']).then(function (ctx) {
+        currentUserId = ctx.user.uid;
+        currentRole = ctx.role;
+        var isAdmin = ctx.role === 'admin';
+        document.querySelectorAll('nav a[href="data-entry.html"]').forEach(function (a) { a.style.display = ''; });
+        document.querySelectorAll('nav a[href="reports.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="decision-support.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="manufacturing.html"]').forEach(function (a) { a.style.display = ''; });
+        document.querySelectorAll('nav a[href="hr.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        if (ctx.user) document.getElementById('profile-link').title = ctx.user.email;
+        document.getElementById('btn-logout').onclick = signOut;
+        db.ref('users/' + ctx.user.uid).once('value').then(function (snap) {
+          currentUserName = (snap.exists() && snap.val().name) ? snap.val().name : ctx.user.email.split('@')[0];
+        });
+        initAll();
+      });
+
+      function setToday(id) {
+        var d = new Date();
+        var y = d.getFullYear(), m = ('0' + (d.getMonth() + 1)).slice(-2), day = ('0' + d.getDate()).slice(-2);
+        var el = document.getElementById(id);
+        if (el && !el.value) el.value = y + '-' + m + '-' + day;
+      }
+
+      function showMsg(id, text, isError) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.className = 'save-msg ' + (isError ? 'error' : 'success');
+        el.style.display = 'block';
+        setTimeout(function () { el.style.display = 'none'; }, 4000);
+      }
+
+      function canManageRecord(rec) {
+        if (!rec) return false;
+        if (currentRole === 'admin') return true;
+        return rec.enteredBy && rec.enteredBy === currentUserId;
+      }
+
+      function rowActions(type, key, rec) {
+        if (!canManageRecord(rec)) return '—';
+        return ''
+          + '<button class="action-btn edit" data-m-type="' + type + '" data-m-key="' + key + '" data-m-action="edit">Edit</button> '
+          + '<button class="action-btn delete" data-m-type="' + type + '" data-m-key="' + key + '" data-m-action="delete">Delete</button>';
+      }
+
+      function closePlanningEditor() { editingPlanningId = null; var p = document.getElementById('planning-edit-panel'); if (p) p.style.display = 'none'; }
+      function closeBatchEditor() { editingBatchId = null; var p = document.getElementById('batch-edit-panel'); if (p) p.style.display = 'none'; }
+      function closeRawEditor() { editingRawId = null; var p = document.getElementById('raw-edit-panel'); if (p) p.style.display = 'none'; }
+      function closeFinishedEditor() { editingFinishedId = null; var p = document.getElementById('finished-edit-panel'); if (p) p.style.display = 'none'; }
+      function closeUtilizationEditor() { editingUtilizationId = null; var p = document.getElementById('utilization-edit-panel'); if (p) p.style.display = 'none'; }
+
+      function monthOptions(selectedVal) {
+        var html = '', d = new Date();
+        for (var i = 0; i < 12; i++) {
+          var y = d.getFullYear(), m = d.getMonth() - i;
+          if (m < 0) { m += 12; y--; }
+          var val = y + '-' + ('0' + (m + 1)).slice(-2);
+          html += '<option value="' + val + '"' + (val === selectedVal ? ' selected' : '') + '>' + val + '</option>';
+        }
+        return html;
+      }
+
+      var currentMonth = (function () {
+        var d = new Date();
+        return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+      })();
+
+      function initAll() {
+        document.querySelectorAll('.tab-link').forEach(function (a) {
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+            document.querySelectorAll('.tab-link').forEach(function (l) { l.classList.remove('active'); });
+            document.getElementById('tab-' + a.dataset.tab).classList.add('active');
+            a.classList.add('active');
+            if (a.dataset.tab === 'target') renderTarget();
+            if (a.dataset.tab === 'performance') renderPerformance();
+          });
+        });
+
+        ['p-date','b-date','r-date','f-date','u-date'].forEach(setToday);
+
+        document.getElementById('planning-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { date: document.getElementById('p-date').value, product: document.getElementById('p-product').value, plannedQty: parseInt(document.getElementById('p-planned').value, 10), line: document.getElementById('p-line').value || null, remarks: document.getElementById('p-remarks').value.trim() || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('manufacturing_planning').push(data).then(function () { showMsg('planning-msg', 'Saved.', false); e.target.reset(); setToday('p-date'); loadPlanning(); }).catch(function (err) { showMsg('planning-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('batch-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { batchId: document.getElementById('b-batch').value.trim(), product: document.getElementById('b-product').value, batchDate: document.getElementById('b-date').value, quantity: parseInt(document.getElementById('b-quantity').value, 10), status: document.getElementById('b-status').value, remarks: document.getElementById('b-remarks').value.trim() || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('manufacturing_batches').push(data).then(function () { showMsg('batch-msg', 'Saved.', false); e.target.reset(); setToday('b-date'); loadBatches(); }).catch(function (err) { showMsg('batch-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('raw-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { date: document.getElementById('r-date').value, material: document.getElementById('r-material').value.trim(), batchRef: document.getElementById('r-batch').value.trim() || null, consumed: parseFloat(document.getElementById('r-consumed').value), unit: document.getElementById('r-unit').value, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('manufacturing_raw').push(data).then(function () { showMsg('raw-msg', 'Saved.', false); e.target.reset(); setToday('r-date'); loadRaw(); }).catch(function (err) { showMsg('raw-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('finished-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { date: document.getElementById('f-date').value, product: document.getElementById('f-product').value, produced: parseInt(document.getElementById('f-produced').value, 10), line: document.getElementById('f-line').value || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('manufacturing_finished').push(data).then(function () { showMsg('finished-msg', 'Saved.', false); e.target.reset(); setToday('f-date'); loadFinished(); }).catch(function (err) { showMsg('finished-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('utilization-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { date: document.getElementById('u-date').value, machine: document.getElementById('u-machine').value.trim(), hoursOperated: parseFloat(document.getElementById('u-hours').value), downtime: parseFloat(document.getElementById('u-downtime').value) || 0, shift: document.getElementById('u-shift').value || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('manufacturing_utilization').push(data).then(function () { showMsg('utilization-msg', 'Saved.', false); e.target.reset(); setToday('u-date'); loadUtilization(); }).catch(function (err) { showMsg('utilization-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('target-month').innerHTML = monthOptions(currentMonth);
+        document.getElementById('perf-month').innerHTML = monthOptions(currentMonth);
+        document.getElementById('target-month').addEventListener('change', renderTarget);
+        document.getElementById('perf-month').addEventListener('change', renderPerformance);
+
+        document.getElementById('planning-edit-cancel').addEventListener('click', closePlanningEditor);
+        document.getElementById('batch-edit-cancel').addEventListener('click', closeBatchEditor);
+        document.getElementById('raw-edit-cancel').addEventListener('click', closeRawEditor);
+        document.getElementById('finished-edit-cancel').addEventListener('click', closeFinishedEditor);
+        document.getElementById('utilization-edit-cancel').addEventListener('click', closeUtilizationEditor);
+
+        document.getElementById('planning-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingPlanningId) return;
+          var data = {
+            date: document.getElementById('pe-date').value,
+            product: document.getElementById('pe-product').value,
+            plannedQty: parseInt(document.getElementById('pe-planned').value, 10),
+            line: document.getElementById('pe-line').value || null,
+            remarks: document.getElementById('pe-remarks').value.trim() || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('manufacturing_planning/' + editingPlanningId).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!canManageRecord(row)) { showMsg('planning-edit-msg', 'You are not allowed to edit this record.', true); return; }
+            return db.ref('manufacturing_planning/' + editingPlanningId).update(data).then(function () {
+              showMsg('planning-msg', 'Schedule updated.', false);
+              closePlanningEditor();
+              loadPlanning();
+              renderTarget();
+            });
+          }).catch(function (err) { showMsg('planning-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.getElementById('batch-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingBatchId) return;
+          var data = {
+            batchId: document.getElementById('be-batch').value.trim(),
+            product: document.getElementById('be-product').value,
+            batchDate: document.getElementById('be-date').value,
+            quantity: parseInt(document.getElementById('be-quantity').value, 10),
+            status: document.getElementById('be-status').value,
+            remarks: document.getElementById('be-remarks').value.trim() || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('manufacturing_batches/' + editingBatchId).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!canManageRecord(row)) { showMsg('batch-edit-msg', 'You are not allowed to edit this record.', true); return; }
+            return db.ref('manufacturing_batches/' + editingBatchId).update(data).then(function () {
+              showMsg('batch-msg', 'Batch updated.', false);
+              closeBatchEditor();
+              loadBatches();
+            });
+          }).catch(function (err) { showMsg('batch-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.getElementById('raw-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingRawId) return;
+          var data = {
+            date: document.getElementById('re-date').value,
+            material: document.getElementById('re-material').value.trim(),
+            batchRef: document.getElementById('re-batch').value.trim() || null,
+            consumed: parseFloat(document.getElementById('re-consumed').value),
+            unit: document.getElementById('re-unit').value,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('manufacturing_raw/' + editingRawId).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!canManageRecord(row)) { showMsg('raw-edit-msg', 'You are not allowed to edit this record.', true); return; }
+            return db.ref('manufacturing_raw/' + editingRawId).update(data).then(function () {
+              showMsg('raw-msg', 'Consumption updated.', false);
+              closeRawEditor();
+              loadRaw();
+              renderPerformance();
+            });
+          }).catch(function (err) { showMsg('raw-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.getElementById('finished-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingFinishedId) return;
+          var data = {
+            date: document.getElementById('fe-date').value,
+            product: document.getElementById('fe-product').value,
+            produced: parseInt(document.getElementById('fe-produced').value, 10),
+            line: document.getElementById('fe-line').value || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('manufacturing_finished/' + editingFinishedId).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!canManageRecord(row)) { showMsg('finished-edit-msg', 'You are not allowed to edit this record.', true); return; }
+            return db.ref('manufacturing_finished/' + editingFinishedId).update(data).then(function () {
+              showMsg('finished-msg', 'Production updated.', false);
+              closeFinishedEditor();
+              loadFinished();
+              renderTarget();
+              renderPerformance();
+            });
+          }).catch(function (err) { showMsg('finished-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.getElementById('utilization-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingUtilizationId) return;
+          var data = {
+            date: document.getElementById('ue-date').value,
+            machine: document.getElementById('ue-machine').value.trim(),
+            hoursOperated: parseFloat(document.getElementById('ue-hours').value),
+            downtime: parseFloat(document.getElementById('ue-downtime').value) || 0,
+            shift: document.getElementById('ue-shift').value || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('manufacturing_utilization/' + editingUtilizationId).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!canManageRecord(row)) { showMsg('utilization-edit-msg', 'You are not allowed to edit this record.', true); return; }
+            return db.ref('manufacturing_utilization/' + editingUtilizationId).update(data).then(function () {
+              showMsg('utilization-msg', 'Utilization updated.', false);
+              closeUtilizationEditor();
+              loadUtilization();
+              renderPerformance();
+            });
+          }).catch(function (err) { showMsg('utilization-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.addEventListener('click', function (e) {
+          var btn = e.target.closest('[data-m-action]');
+          if (!btn) return;
+          var type = btn.getAttribute('data-m-type');
+          var key = btn.getAttribute('data-m-key');
+          var action = btn.getAttribute('data-m-action');
+          var path =
+            type === 'planning' ? 'manufacturing_planning/' + key :
+            type === 'batch' ? 'manufacturing_batches/' + key :
+            type === 'raw' ? 'manufacturing_raw/' + key :
+            type === 'finished' ? 'manufacturing_finished/' + key :
+            'manufacturing_utilization/' + key;
+
+          db.ref(path).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!row) return;
+            if (!canManageRecord(row)) { alert('You are not allowed to modify this record.'); return; }
+            if (action === 'delete') {
+              if (!confirm('Delete this record?')) return;
+              return db.ref(path).remove().then(function () {
+                if (type === 'planning') { loadPlanning(); renderTarget(); }
+                else if (type === 'batch') loadBatches();
+                else if (type === 'raw') { loadRaw(); renderPerformance(); }
+                else if (type === 'finished') { loadFinished(); renderTarget(); renderPerformance(); }
+                else { loadUtilization(); renderPerformance(); }
+              });
+            }
+
+            if (type === 'planning') {
+              editingPlanningId = key;
+              document.getElementById('pe-date').value = row.date || '';
+              document.getElementById('pe-product').value = row.product || '';
+              document.getElementById('pe-planned').value = row.plannedQty || 1;
+              document.getElementById('pe-line').value = row.line || '';
+              document.getElementById('pe-remarks').value = row.remarks || '';
+              document.getElementById('planning-edit-panel').style.display = 'block';
+            } else if (type === 'batch') {
+              editingBatchId = key;
+              document.getElementById('be-batch').value = row.batchId || '';
+              document.getElementById('be-product').value = row.product || '';
+              document.getElementById('be-date').value = row.batchDate || '';
+              document.getElementById('be-quantity').value = row.quantity || 1;
+              document.getElementById('be-status').value = row.status || 'In Progress';
+              document.getElementById('be-remarks').value = row.remarks || '';
+              document.getElementById('batch-edit-panel').style.display = 'block';
+            } else if (type === 'raw') {
+              editingRawId = key;
+              document.getElementById('re-date').value = row.date || '';
+              document.getElementById('re-material').value = row.material || '';
+              document.getElementById('re-batch').value = row.batchRef || '';
+              document.getElementById('re-consumed').value = row.consumed || 0;
+              document.getElementById('re-unit').value = row.unit || 'kg';
+              document.getElementById('raw-edit-panel').style.display = 'block';
+            } else if (type === 'finished') {
+              editingFinishedId = key;
+              document.getElementById('fe-date').value = row.date || '';
+              document.getElementById('fe-product').value = row.product || '';
+              document.getElementById('fe-produced').value = row.produced || 0;
+              document.getElementById('fe-line').value = row.line || '';
+              document.getElementById('finished-edit-panel').style.display = 'block';
+            } else {
+              editingUtilizationId = key;
+              document.getElementById('ue-date').value = row.date || '';
+              document.getElementById('ue-machine').value = row.machine || '';
+              document.getElementById('ue-hours').value = row.hoursOperated || 0;
+              document.getElementById('ue-downtime').value = row.downtime || 0;
+              document.getElementById('ue-shift').value = row.shift || '';
+              document.getElementById('utilization-edit-panel').style.display = 'block';
+            }
+          });
+        });
+
+        loadPlanning();
+        loadBatches();
+        loadRaw();
+        loadFinished();
+        loadUtilization();
+        renderTarget();
+        renderPerformance();
+      }
+
+      function loadList(path, wrapId, cols, mapper) {
+        var wrap = document.getElementById(wrapId);
+        if (!wrap) return;
+        wrap.innerHTML = '<div class="loading">Loading…</div>';
+        db.ref(path).once('value').then(function (snap) {
+          var val = snap.val(), rows = [];
+          if (val) Object.keys(val).forEach(function (k) { rows.push({ id: k, data: val[k] }); });
+          rows.sort(function (a, b) { return (b.data.enteredAt || 0) - (a.data.enteredAt || 0); });
+          if (!rows.length) { wrap.innerHTML = '<table><tbody><tr><td style="color:var(--text-muted);">No records yet.</td></tr></tbody></table>'; return; }
+          var tr = rows.slice(0, 30).map(function (r) { return mapper(r); }).join('');
+          wrap.innerHTML = '<table><thead><tr>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' + tr + '</tbody></table>';
+        });
+      }
+
+      function loadPlanning() {
+        loadList('manufacturing_planning', 'planning-list', ['Date', 'Product', 'Planned Qty', 'Line', 'Remarks', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.date || '—') + '</td><td>' + (x.product || '—') + '</td><td>' + (x.plannedQty || 0) + '</td><td>' + (x.line || '—') + '</td><td>' + (x.remarks || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('planning', r.id, x) + '</td></tr>';
+        });
+      }
+
+      function loadBatches() {
+        loadList('manufacturing_batches', 'batch-list', ['Batch ID', 'Product', 'Date', 'Qty', 'Status', 'Remarks', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.batchId || '—') + '</td><td>' + (x.product || '—') + '</td><td>' + (x.batchDate || '—') + '</td><td>' + (x.quantity || 0) + '</td><td>' + (x.status || '—') + '</td><td>' + (x.remarks || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('batch', r.id, x) + '</td></tr>';
+        });
+      }
+
+      function loadRaw() {
+        loadList('manufacturing_raw', 'raw-list', ['Date', 'Material', 'Consumed', 'Unit', 'Batch Ref', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.date || '—') + '</td><td>' + (x.material || '—') + '</td><td>' + (x.consumed || 0) + '</td><td>' + (x.unit || '—') + '</td><td>' + (x.batchRef || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('raw', r.id, x) + '</td></tr>';
+        });
+      }
+
+      function loadFinished() {
+        loadList('manufacturing_finished', 'finished-list', ['Date', 'Product', 'Produced', 'Line', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.date || '—') + '</td><td>' + (x.product || '—') + '</td><td>' + (x.produced || 0) + '</td><td>' + (x.line || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('finished', r.id, x) + '</td></tr>';
+        });
+      }
+
+      function loadUtilization() {
+        loadList('manufacturing_utilization', 'utilization-list', ['Date', 'Machine', 'Hrs Operated', 'Downtime', 'Shift', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.date || '—') + '</td><td>' + (x.machine || '—') + '</td><td>' + (x.hoursOperated || 0) + '</td><td>' + (x.downtime || 0) + '</td><td>' + (x.shift || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('utilization', r.id, x) + '</td></tr>';
+        });
+      }
+
+      function renderTarget() {
+        var month = document.getElementById('target-month').value;
+        if (!month) return;
+        Promise.all([
+          db.ref('manufacturing_planning').once('value'),
+          db.ref('manufacturing_finished').once('value')
+        ]).then(function (results) {
+          var planned = {}, actual = {};
+          var pVal = results[0].val(), aVal = results[1].val();
+          if (pVal) Object.keys(pVal).forEach(function (k) {
+            var x = pVal[k];
+            if ((x.date || '').slice(0, 7) === month) {
+              var key = x.product || 'Other';
+              planned[key] = (planned[key] || 0) + (x.plannedQty || 0);
+            }
+          });
+          if (aVal) Object.keys(aVal).forEach(function (k) {
+            var x = aVal[k];
+            if ((x.date || '').slice(0, 7) === month) {
+              var key = x.product || 'Other';
+              actual[key] = (actual[key] || 0) + (x.produced || 0);
+            }
+          });
+          var all = Object.keys(Object.assign({}, planned, actual)).sort();
+          var rows = all.map(function (p) {
+            var pl = planned[p] || 0, ac = actual[p] || 0;
+            var pct = pl ? ((ac / pl) * 100).toFixed(1) + '%' : '—';
+            var cls = pl && ac >= pl ? 'achieve-ok' : 'achieve-low';
+            return '<tr><td>' + p + '</td><td>' + pl + '</td><td>' + ac + '</td><td class="' + cls + '">' + pct + '</td></tr>';
+          }).join('');
+          var tPl = Object.values(planned).reduce(function (s, v) { return s + v; }, 0);
+          var tAc = Object.values(actual).reduce(function (s, v) { return s + v; }, 0);
+          var tPct = tPl ? ((tAc / tPl) * 100).toFixed(1) + '%' : '—';
+          var tCls = tPl && tAc >= tPl ? 'achieve-ok' : 'achieve-low';
+          document.getElementById('target-content').innerHTML = '<table><thead><tr><th>Product</th><th>Target (Planned)</th><th>Actual</th><th>%</th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" style="color:var(--text-muted)">No data for this month.</td></tr>') + '<tr><td><strong>Total</strong></td><td>' + tPl + '</td><td>' + tAc + '</td><td class="' + tCls + '">' + tPct + '</td></tr></tbody></table>';
+        });
+      }
+
+      function renderPerformance() {
+        var month = document.getElementById('perf-month').value;
+        if (!month) return;
+        Promise.all([
+          db.ref('manufacturing_finished').once('value'),
+          db.ref('manufacturing_utilization').once('value'),
+          db.ref('manufacturing_raw').once('value')
+        ]).then(function (results) {
+          var fVal = results[0].val(), uVal = results[1].val(), rVal = results[2].val();
+          var byProduct = {}, totalProduced = 0;
+          if (fVal) Object.keys(fVal).forEach(function (k) {
+            var x = fVal[k];
+            if ((x.date || '').slice(0, 7) === month) {
+              var p = x.product || 'Other';
+              byProduct[p] = (byProduct[p] || 0) + (x.produced || 0);
+              totalProduced += (x.produced || 0);
+            }
+          });
+          var utilRows = [];
+          var totalHrs = 0, totalDown = 0;
+          if (uVal) Object.keys(uVal).forEach(function (k) {
+            var x = uVal[k];
+            if ((x.date || '').slice(0, 7) === month) {
+              totalHrs += (x.hoursOperated || 0);
+              totalDown += (x.downtime || 0);
+              utilRows.push('<tr><td>' + (x.machine || '—') + '</td><td>' + (x.date || '—') + '</td><td>' + (x.hoursOperated || 0) + '</td><td>' + (x.downtime || 0) + '</td><td>' + (x.shift || '—') + '</td></tr>');
+            }
+          });
+          var rawByMat = {};
+          if (rVal) Object.keys(rVal).forEach(function (k) {
+            var x = rVal[k];
+            if ((x.date || '').slice(0, 7) === month) {
+              var m = x.material || 'Other';
+              rawByMat[m] = (rawByMat[m] || 0) + (x.consumed || 0);
+            }
+          });
+          var prodRows = Object.keys(byProduct).sort().map(function (p) { return '<tr><td>' + p + '</td><td>' + byProduct[p] + '</td></tr>'; }).join('');
+          var rawRows = Object.keys(rawByMat).sort().map(function (m) { return '<tr><td>' + m + '</td><td>' + rawByMat[m] + '</td></tr>'; }).join('');
+          var util = totalHrs ? ((totalHrs / (totalHrs + totalDown)) * 100).toFixed(1) : 0;
+          var html = '<div class="report-section"><h3>Production by Product</h3><div class="table-wrap"><table><thead><tr><th>Product</th><th>Quantity</th></tr></thead><tbody>' + (prodRows || '<tr><td colspan="2">No data.</td></tr>') + '</tbody></table></div></div>';
+          html += '<div class="report-section"><h3>Machine Utilization Summary</h3><p><strong>Total Hours Operated:</strong> ' + totalHrs + ' hrs | <strong>Downtime:</strong> ' + totalDown + ' hrs | <strong>Utilization:</strong> ' + util + '%</p><div class="table-wrap"><table><thead><tr><th>Machine</th><th>Date</th><th>Hrs Operated</th><th>Downtime</th><th>Shift</th></tr></thead><tbody>' + (utilRows.join('') || '<tr><td colspan="5">No data.</td></tr>') + '</tbody></table></div></div>';
+          html += '<div class="report-section"><h3>Raw Material Consumption</h3><div class="table-wrap"><table><thead><tr><th>Material</th><th>Consumed</th></tr></thead><tbody>' + (rawRows || '<tr><td colspan="2">No data.</td></tr>') + '</tbody></table></div></div>';
+          document.getElementById('perf-content').innerHTML = html;
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

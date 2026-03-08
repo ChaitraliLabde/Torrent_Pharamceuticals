@@ -43,6 +43,8 @@
       <a href="data-entry.html" class="active">Data Entry</a>
       <a href="reports.html">Reports</a>
       <a href="decision-support.html">Decision Support</a>
+      <a href="manufacturing.html">Manufacturing</a>
+      <a href="hr.html">HR</a>
       <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
     </nav>
   </header>
@@ -236,8 +238,11 @@
         var u    = ctx.user;
         currentUserRole = role || 'sales_exec';
         currentUserId = u.uid;
-        document.querySelectorAll('nav a[href="reports.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
-        document.querySelectorAll('nav a[href="decision-support.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="data-entry.html"]').forEach(function (a) { a.style.display = ''; });
+        document.querySelectorAll('nav a[href="reports.html"]').forEach(function (a) { a.style.display = (role === 'admin') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="decision-support.html"]').forEach(function (a) { a.style.display = (role === 'admin') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="manufacturing.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="hr.html"]').forEach(function (a) { a.style.display = (role === 'admin') ? '' : 'none'; });
         if (u) document.getElementById('profile-link').title = u.email;
         document.getElementById('btn-logout').onclick = signOut;
 

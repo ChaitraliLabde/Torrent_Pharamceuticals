@@ -37,6 +37,8 @@
       <a href="data-entry.html">Data Entry</a>
       <a href="reports.html">Reports</a>
       <a href="decision-support.html">Decision Support</a>
+      <a href="manufacturing.html">Manufacturing</a>
+      <a href="hr.html">HR</a>
       <span class="nav-right"><a href="profile.html" class="active">Profile</a><button type="button" id="btn-logout">Logout</button></span>
     </nav>
   </header>
@@ -138,12 +140,15 @@
           document.getElementById('t-count').textContent = String(count);
         });
 
+        document.querySelectorAll('nav a[href="data-entry.html"]').forEach(function (a) { a.style.display = (role === 'hr') ? 'none' : ''; });
         document.querySelectorAll('nav a[href="reports.html"], nav a[href="decision-support.html"]').forEach(function (a) {
-          a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none';
+          a.style.display = (role === 'admin') ? '' : 'none';
         });
+        document.querySelectorAll('nav a[href="manufacturing.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'manager') ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="hr.html"]').forEach(function (a) { a.style.display = (role === 'admin' || role === 'hr') ? '' : 'none'; });
       }
 
-      requireRole(['admin', 'manager', 'sales_exec']).then(function (ctx) {
+      requireRole(['admin', 'manager', 'sales_exec', 'hr']).then(function (ctx) {
         var user = ctx.user;
         var role = ctx.role;
         document.getElementById('btn-logout').onclick = signOut;

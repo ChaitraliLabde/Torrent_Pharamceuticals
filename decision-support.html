@@ -25,6 +25,8 @@
       <a href="data-entry.html">Data Entry</a>
       <a href="reports.html">Reports</a>
       <a href="decision-support.html" class="active">Decision Support</a>
+      <a href="manufacturing.html">Manufacturing</a>
+      <a href="hr.html">HR</a>
       <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
     </nav>
   </header>
@@ -53,8 +55,11 @@
       document.body.style.opacity = '0';
       
       // noRedirect=true so we handle access denial ourselves (show a message, not a silent redirect)
-      requireRole(['admin', 'manager'], true).then(function () {
+      requireRole(['admin'], true).then(function (ctx) {
         document.body.style.opacity = '1';
+        var role = ctx ? ctx.role : getCurrentUserRole();
+        document.querySelectorAll('nav a[href="manufacturing.html"]').forEach(function (a) { a.style.display = ''; });
+        document.querySelectorAll('nav a[href="hr.html"]').forEach(function (a) { a.style.display = (role === 'admin') ? '' : 'none'; });
         var u = getCurrentUser();
         if (u) document.getElementById('profile-link').title = u.email;
         document.getElementById('btn-logout').onclick = signOut;
@@ -64,7 +69,7 @@
         document.querySelector('main').innerHTML =
           '<div class="card" style="text-align:center;padding:2rem;">' +
           '<h2>Access Denied</h2>' +
-          '<p>Decision Support is only available to <strong>Admin</strong> and <strong>Manager</strong> roles.</p>' +
+          '<p>Decision Support is only available to <strong>Admin</strong>.</p>' +
           '<p>Your current role: <strong>' + (getCurrentUserRole() || 'sales_exec') + '</strong></p>' +
           '<p><a href="index.html">Return to Dashboard</a></p>' +
           '</div>';

@@ -47,6 +47,8 @@
       <a href="data-entry.html">Data Entry</a>
       <a href="reports.html" class="active">Reports</a>
       <a href="decision-support.html">Decision Support</a>
+      <a href="manufacturing.html">Manufacturing</a>
+      <a href="hr.html">HR</a>
       <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
     </nav>
   </header>
@@ -160,7 +162,7 @@
       var currentRole = '';
       var exportCache = { target: [], product: [], region: [] };
 
-      requireRole(['admin', 'manager'], true).then(function (ctx) {
+      requireRole(['admin'], true).then(function (ctx) {
         document.body.style.opacity = '1';
         currentUser = ctx.user;
         currentRole = ctx.role;
@@ -172,6 +174,8 @@
           currentUserName = (snap.exists() && snap.val().name) ? snap.val().name : currentUser.email.split('@')[0];
         });
 
+        document.querySelectorAll('nav a[href="manufacturing.html"]').forEach(function (a) { a.style.display = ''; });
+        document.querySelectorAll('nav a[href="hr.html"]').forEach(function (a) { a.style.display = (currentRole === 'admin') ? '' : 'none'; });
         // Show admin target panel only for admins
         if (currentRole === 'admin') {
           document.getElementById('admin-target-panel').style.display = '';
@@ -184,7 +188,7 @@
         document.querySelector('main').innerHTML =
           '<div class="card" style="text-align:center;padding:2rem;">' +
           '<h2>Access Denied</h2>' +
-          '<p>Reports are only available to <strong>Admin</strong> and <strong>Manager</strong> roles.</p>' +
+          '<p>Reports are only available to <strong>Admin</strong>.</p>' +
           '<p>Your current role: <strong>' + (getCurrentUserRole() || 'sales_exec') + '</strong></p>' +
           '<p><a href="index.html">Return to Dashboard</a></p>' +
           '</div>';

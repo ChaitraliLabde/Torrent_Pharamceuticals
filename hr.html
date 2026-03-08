@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR MIS | Torrent Pharma</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted); }
+    .form-group input, .form-group select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; }
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: white; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tabs a { padding: 0.5rem 1rem; background: var(--border); border-radius: var(--radius); text-decoration: none; color: var(--text); font-size: 0.9rem; }
+    .tabs a.active { background: var(--primary); color: white; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .save-msg { margin-top: 0.75rem; padding: 0.5rem; border-radius: var(--radius); font-size: 0.9rem; display: none; }
+    .save-msg.success { background: #e8f5e9; color: var(--success); }
+    .save-msg.error { background: #ffebee; color: #c62828; }
+    .sub-title { margin-top: 1.25rem; margin-bottom: 0.6rem; font-size: 0.9rem; color: var(--text-muted); }
+    .nav-right { margin-left: auto; display: inline-flex; gap: 0.5rem; }
+    .nav-right a, .nav-right button { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.9rem; text-decoration: none; }
+    .filter-bar { margin-bottom: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .filter-bar select { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); }
+    .report-section { margin-bottom: 1.5rem; }
+    .action-btn { border: 1px solid var(--border); background: #fff; border-radius: var(--radius); padding: 0.28rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .action-btn.edit { color: var(--primary); }
+    .action-btn.delete { color: #c62828; }
+    .edit-panel { margin-top: 0.9rem; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem; background: #fafbff; display: none; }
+    .edit-panel h4 { margin-bottom: 0.65rem; color: var(--text-muted); font-size: 0.88rem; }
+    .edit-actions { display: flex; gap: 0.55rem; }
+    .btn-secondary { background: #eceff1; color: #37474f; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Torrent Pharmaceuticals</h1>
+    <p>Sales &amp; Marketing MIS — HR</p>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="data-entry.html">Data Entry</a>
+      <a href="reports.html">Reports</a>
+      <a href="decision-support.html">Decision Support</a>
+      <a href="manufacturing.html">Manufacturing</a>
+      <a href="hr.html" class="active">HR</a>
+      <span class="nav-right"><a href="profile.html" id="profile-link">Profile</a><button type="button" id="btn-logout">Logout</button></span>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">HR MIS</h1>
+    <div class="tabs">
+      <a href="#" class="tab-link active" data-tab="employees">Employee Master</a>
+      <a href="#" class="tab-link" data-tab="attendance">Attendance & Leave</a>
+      <a href="#" class="tab-link" data-tab="department">Department Reports</a>
+      <a href="#" class="tab-link" data-tab="training">Training & Skills</a>
+      <a href="#" class="tab-link" data-tab="appraisal">Performance Appraisal</a>
+      <a href="#" class="tab-link" data-tab="attrition">Attrition Analysis</a>
+    </div>
+
+    <div id="tab-employees" class="tab-pane active card">
+      <h2>Employee Master Data Management</h2>
+      <form id="emp-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="emp-id">Employee ID *</label>
+            <input type="text" id="emp-id" required placeholder="e.g. EMP001">
+          </div>
+          <div class="form-group">
+            <label for="emp-name">Full Name *</label>
+            <input type="text" id="emp-name" required placeholder="Employee name">
+          </div>
+          <div class="form-group">
+            <label for="emp-dept">Department *</label>
+            <select id="emp-dept" required>
+              <option value="">Select</option>
+              <option value="Sales">Sales</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Manufacturing">Manufacturing</option>
+              <option value="R&D">R&D</option>
+              <option value="Quality">Quality</option>
+              <option value="Finance">Finance</option>
+              <option value="HR">HR</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emp-designation">Designation *</label>
+            <input type="text" id="emp-designation" required placeholder="e.g. Manager, Executive">
+          </div>
+          <div class="form-group">
+            <label for="emp-email">Email</label>
+            <input type="email" id="emp-email" placeholder="email@company.com">
+          </div>
+          <div class="form-group">
+            <label for="emp-doj">Date of Joining *</label>
+            <input type="date" id="emp-doj" required>
+          </div>
+          <div class="form-group">
+            <label for="emp-status">Status</label>
+            <select id="emp-status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Resigned">Resigned</option>
+              <option value="Retired">Retired</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add / Update Employee</button>
+        <div id="emp-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Employee List</h3>
+      <div id="emp-list" class="table-wrap"></div>
+    </div>
+
+    <div id="tab-attendance" class="tab-pane card">
+      <h2>Attendance and Leave Tracking</h2>
+      <form id="attendance-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="a-date">Date *</label>
+            <input type="date" id="a-date" required>
+          </div>
+          <div class="form-group">
+            <label for="a-emp">Employee ID *</label>
+            <input type="text" id="a-emp" required placeholder="EMP001">
+          </div>
+          <div class="form-group">
+            <label for="a-status">Status *</label>
+            <select id="a-status" required>
+              <option value="">Select</option>
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+              <option value="Leave">Leave</option>
+              <option value="Half Day">Half Day</option>
+              <option value="WFH">WFH</option>
+              <option value="Holiday">Holiday</option>
+              <option value="Weekend">Weekend</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="a-leave-type">Leave Type (if Leave)</label>
+            <select id="a-leave-type">
+              <option value="">—</option>
+              <option value="Casual">Casual Leave</option>
+              <option value="Sick">Sick Leave</option>
+              <option value="Earned">Earned Leave</option>
+              <option value="Maternity">Maternity</option>
+              <option value="Paternity">Paternity</option>
+              <option value="Unpaid">Unpaid</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="a-remarks">Remarks</label>
+            <input type="text" id="a-remarks" placeholder="Notes">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Attendance</button>
+        <div id="attendance-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Attendance Records</h3>
+      <div id="attendance-list" class="table-wrap"></div>
+      <div id="attendance-edit-panel" class="edit-panel">
+        <h4>Edit Attendance</h4>
+        <form id="attendance-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="ae-date">Date *</label>
+              <input type="date" id="ae-date" required>
+            </div>
+            <div class="form-group">
+              <label for="ae-emp">Employee ID *</label>
+              <input type="text" id="ae-emp" required>
+            </div>
+            <div class="form-group">
+              <label for="ae-status">Status *</label>
+              <select id="ae-status" required>
+                <option value="">Select</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Leave">Leave</option>
+                <option value="Half Day">Half Day</option>
+                <option value="WFH">WFH</option>
+                <option value="Holiday">Holiday</option>
+                <option value="Weekend">Weekend</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="ae-leave-type">Leave Type</label>
+              <select id="ae-leave-type">
+                <option value="">—</option>
+                <option value="Casual">Casual Leave</option>
+                <option value="Sick">Sick Leave</option>
+                <option value="Earned">Earned Leave</option>
+                <option value="Maternity">Maternity</option>
+                <option value="Paternity">Paternity</option>
+                <option value="Unpaid">Unpaid</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="ae-remarks">Remarks</label>
+              <input type="text" id="ae-remarks">
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Attendance</button>
+            <button type="button" class="btn btn-secondary" id="attendance-edit-cancel">Cancel</button>
+          </div>
+          <div id="attendance-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-department" class="tab-pane card">
+      <h2>Department-wise Employee Reports</h2>
+      <div class="filter-bar">
+        <label>Department:</label>
+        <select id="dept-filter">
+          <option value="">All Departments</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Manufacturing">Manufacturing</option>
+          <option value="R&D">R&D</option>
+          <option value="Quality">Quality</option>
+          <option value="Finance">Finance</option>
+          <option value="HR">HR</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div id="dept-content" class="table-wrap"></div>
+    </div>
+
+    <div id="tab-training" class="tab-pane card">
+      <h2>Training and Skill Development Records</h2>
+      <form id="training-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="t-emp">Employee ID *</label>
+            <input type="text" id="t-emp" required placeholder="EMP001">
+          </div>
+          <div class="form-group">
+            <label for="t-name">Training Name *</label>
+            <input type="text" id="t-name" required placeholder="Training program name">
+          </div>
+          <div class="form-group">
+            <label for="t-date">Date *</label>
+            <input type="date" id="t-date" required>
+          </div>
+          <div class="form-group">
+            <label for="t-skill">Skill / Competency</label>
+            <input type="text" id="t-skill" placeholder="e.g. Leadership, GMP">
+          </div>
+          <div class="form-group">
+            <label for="t-status">Status</label>
+            <select id="t-status">
+              <option value="Completed">Completed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Scheduled">Scheduled</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="t-remarks">Remarks</label>
+            <input type="text" id="t-remarks" placeholder="Notes">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Training Record</button>
+        <div id="training-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Training Records</h3>
+      <div id="training-list" class="table-wrap"></div>
+      <div id="training-edit-panel" class="edit-panel">
+        <h4>Edit Training</h4>
+        <form id="training-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="te-emp">Employee ID *</label>
+              <input type="text" id="te-emp" required>
+            </div>
+            <div class="form-group">
+              <label for="te-name">Training Name *</label>
+              <input type="text" id="te-name" required>
+            </div>
+            <div class="form-group">
+              <label for="te-date">Date *</label>
+              <input type="date" id="te-date" required>
+            </div>
+            <div class="form-group">
+              <label for="te-skill">Skill / Competency</label>
+              <input type="text" id="te-skill">
+            </div>
+            <div class="form-group">
+              <label for="te-status">Status</label>
+              <select id="te-status">
+                <option value="Completed">Completed</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Scheduled">Scheduled</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="te-remarks">Remarks</label>
+              <input type="text" id="te-remarks">
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Training</button>
+            <button type="button" class="btn btn-secondary" id="training-edit-cancel">Cancel</button>
+          </div>
+          <div id="training-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-appraisal" class="tab-pane card">
+      <h2>Performance Appraisal Data</h2>
+      <form id="appraisal-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="ap-emp">Employee ID *</label>
+            <input type="text" id="ap-emp" required placeholder="EMP001">
+          </div>
+          <div class="form-group">
+            <label for="ap-period">Appraisal Period *</label>
+            <input type="text" id="ap-period" required placeholder="e.g. 2024-2025">
+          </div>
+          <div class="form-group">
+            <label for="ap-rating">Rating (1-5) *</label>
+            <select id="ap-rating" required>
+              <option value="">Select</option>
+              <option value="1">1 - Needs Improvement</option>
+              <option value="2">2 - Below Expectations</option>
+              <option value="3">3 - Meets Expectations</option>
+              <option value="4">4 - Exceeds Expectations</option>
+              <option value="5">5 - Outstanding</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ap-date">Review Date *</label>
+            <input type="date" id="ap-date" required>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="ap-remarks">Feedback / Remarks</label>
+            <input type="text" id="ap-remarks" placeholder="Appraisal notes">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Appraisal</button>
+        <div id="appraisal-msg" class="save-msg"></div>
+      </form>
+      <h3 class="sub-title">Appraisal Records</h3>
+      <div id="appraisal-list" class="table-wrap"></div>
+      <div id="appraisal-edit-panel" class="edit-panel">
+        <h4>Edit Appraisal</h4>
+        <form id="appraisal-edit-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="ape-emp">Employee ID *</label>
+              <input type="text" id="ape-emp" required>
+            </div>
+            <div class="form-group">
+              <label for="ape-period">Appraisal Period *</label>
+              <input type="text" id="ape-period" required>
+            </div>
+            <div class="form-group">
+              <label for="ape-rating">Rating (1-5) *</label>
+              <select id="ape-rating" required>
+                <option value="">Select</option>
+                <option value="1">1 - Needs Improvement</option>
+                <option value="2">2 - Below Expectations</option>
+                <option value="3">3 - Meets Expectations</option>
+                <option value="4">4 - Exceeds Expectations</option>
+                <option value="5">5 - Outstanding</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="ape-date">Review Date *</label>
+              <input type="date" id="ape-date" required>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="ape-remarks">Feedback / Remarks</label>
+              <input type="text" id="ape-remarks">
+            </div>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn btn-primary">Update Appraisal</button>
+            <button type="button" class="btn btn-secondary" id="appraisal-edit-cancel">Cancel</button>
+          </div>
+          <div id="appraisal-edit-msg" class="save-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-attrition" class="tab-pane card">
+      <h2>Attrition and Manpower Analysis</h2>
+      <div class="filter-bar">
+        <label>Year:</label>
+        <select id="attrition-year"></select>
+        <label>Department:</label>
+        <select id="attrition-dept">
+          <option value="">All</option>
+          <option value="Sales">Sales</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Manufacturing">Manufacturing</option>
+          <option value="R&D">R&D</option>
+          <option value="Quality">Quality</option>
+          <option value="Finance">Finance</option>
+          <option value="HR">HR</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div id="attrition-content"></div>
+    </div>
+  </main>
+
+  <footer class="footer">Torrent Pharmaceuticals — Sales &amp; Marketing MIS<br><small>For academic purpose only.</small></footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      var currentUserId = '';
+      var currentUserName = '';
+      var currentRole = '';
+      var editingAttendanceId = null;
+      var editingTrainingId = null;
+      var editingAppraisalId = null;
+      var editingEmpKey = null;
+
+      requireRole(['admin', 'hr']).then(function (ctx) {
+        currentUserId = ctx.user.uid;
+        currentRole = ctx.role;
+        var isAdmin = ctx.role === 'admin';
+        document.querySelectorAll('nav a[href="data-entry.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="reports.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="decision-support.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="manufacturing.html"]').forEach(function (a) { a.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('nav a[href="hr.html"]').forEach(function (a) { a.style.display = ''; });
+        if (ctx.user) document.getElementById('profile-link').title = ctx.user.email;
+        document.getElementById('btn-logout').onclick = signOut;
+        db.ref('users/' + ctx.user.uid).once('value').then(function (snap) {
+          currentUserName = (snap.exists() && snap.val().name) ? snap.val().name : ctx.user.email.split('@')[0];
+        });
+        initAll();
+      });
+
+      function setToday(id) {
+        var d = new Date();
+        var y = d.getFullYear(), m = ('0' + (d.getMonth() + 1)).slice(-2), day = ('0' + d.getDate()).slice(-2);
+        var el = document.getElementById(id);
+        if (el && !el.value) el.value = y + '-' + m + '-' + day;
+      }
+
+      function showMsg(id, text, isError) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.className = 'save-msg ' + (isError ? 'error' : 'success');
+        el.style.display = 'block';
+        setTimeout(function () { el.style.display = 'none'; }, 4000);
+      }
+
+      function canManageHR() {
+        return currentRole === 'admin' || currentRole === 'hr';
+      }
+
+      function rowActions(type, key) {
+        if (!canManageHR()) return '—';
+        return ''
+          + '<button class="action-btn edit" data-h-type="' + type + '" data-h-key="' + key + '" data-h-action="edit">Edit</button> '
+          + '<button class="action-btn delete" data-h-type="' + type + '" data-h-key="' + key + '" data-h-action="delete">Delete</button>';
+      }
+
+      function closeAttendanceEditor() { editingAttendanceId = null; var p = document.getElementById('attendance-edit-panel'); if (p) p.style.display = 'none'; }
+      function closeTrainingEditor() { editingTrainingId = null; var p = document.getElementById('training-edit-panel'); if (p) p.style.display = 'none'; }
+      function closeAppraisalEditor() { editingAppraisalId = null; var p = document.getElementById('appraisal-edit-panel'); if (p) p.style.display = 'none'; }
+
+      function initAll() {
+        document.querySelectorAll('.tab-link').forEach(function (a) {
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+            document.querySelectorAll('.tab-link').forEach(function (l) { l.classList.remove('active'); });
+            document.getElementById('tab-' + a.dataset.tab).classList.add('active');
+            a.classList.add('active');
+            if (a.dataset.tab === 'department') renderDepartment();
+            if (a.dataset.tab === 'attrition') renderAttrition();
+          });
+        });
+
+        setToday('a-date');
+        setToday('t-date');
+        setToday('ap-date');
+
+        document.getElementById('emp-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var id = document.getElementById('emp-id').value.trim();
+          var data = { empId: id, name: document.getElementById('emp-name').value.trim(), department: document.getElementById('emp-dept').value, designation: document.getElementById('emp-designation').value.trim(), email: document.getElementById('emp-email').value.trim() || null, doj: document.getElementById('emp-doj').value, status: document.getElementById('emp-status').value, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          var key = (editingEmpKey || id.replace(/[.#$\[\]]/g, '_'));
+          db.ref('hr_employees/' + key).set(data).then(function () {
+            showMsg('emp-msg', 'Saved.', false);
+            editingEmpKey = null;
+            e.target.reset();
+            loadEmployees();
+            renderDepartment();
+            renderAttrition();
+          }).catch(function (err) { showMsg('emp-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('attendance-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { date: document.getElementById('a-date').value, empId: document.getElementById('a-emp').value.trim(), status: document.getElementById('a-status').value, leaveType: document.getElementById('a-leave-type').value || null, remarks: document.getElementById('a-remarks').value.trim() || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('hr_attendance').push(data).then(function () { showMsg('attendance-msg', 'Saved.', false); e.target.reset(); setToday('a-date'); loadAttendance(); }).catch(function (err) { showMsg('attendance-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('training-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { empId: document.getElementById('t-emp').value.trim(), trainingName: document.getElementById('t-name').value.trim(), date: document.getElementById('t-date').value, skill: document.getElementById('t-skill').value.trim() || null, status: document.getElementById('t-status').value, remarks: document.getElementById('t-remarks').value.trim() || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('hr_training').push(data).then(function () { showMsg('training-msg', 'Saved.', false); e.target.reset(); setToday('t-date'); loadTraining(); }).catch(function (err) { showMsg('training-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('appraisal-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var data = { empId: document.getElementById('ap-emp').value.trim(), period: document.getElementById('ap-period').value.trim(), rating: parseInt(document.getElementById('ap-rating').value, 10), reviewDate: document.getElementById('ap-date').value, remarks: document.getElementById('ap-remarks').value.trim() || null, enteredBy: currentUserId, enteredByName: currentUserName, enteredAt: firebase.database.ServerValue.TIMESTAMP };
+          db.ref('hr_appraisal').push(data).then(function () { showMsg('appraisal-msg', 'Saved.', false); e.target.reset(); setToday('ap-date'); loadAppraisal(); }).catch(function (err) { showMsg('appraisal-msg', err.message || 'Failed.', true); });
+        });
+
+        document.getElementById('attendance-edit-cancel').addEventListener('click', closeAttendanceEditor);
+        document.getElementById('training-edit-cancel').addEventListener('click', closeTrainingEditor);
+        document.getElementById('appraisal-edit-cancel').addEventListener('click', closeAppraisalEditor);
+
+        document.getElementById('attendance-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingAttendanceId) return;
+          var data = {
+            date: document.getElementById('ae-date').value,
+            empId: document.getElementById('ae-emp').value.trim(),
+            status: document.getElementById('ae-status').value,
+            leaveType: document.getElementById('ae-leave-type').value || null,
+            remarks: document.getElementById('ae-remarks').value.trim() || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('hr_attendance/' + editingAttendanceId).update(data).then(function () {
+            showMsg('attendance-msg', 'Attendance updated.', false);
+            closeAttendanceEditor();
+            loadAttendance();
+          }).catch(function (err) { showMsg('attendance-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.getElementById('training-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingTrainingId) return;
+          var data = {
+            empId: document.getElementById('te-emp').value.trim(),
+            trainingName: document.getElementById('te-name').value.trim(),
+            date: document.getElementById('te-date').value,
+            skill: document.getElementById('te-skill').value.trim() || null,
+            status: document.getElementById('te-status').value,
+            remarks: document.getElementById('te-remarks').value.trim() || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('hr_training/' + editingTrainingId).update(data).then(function () {
+            showMsg('training-msg', 'Training updated.', false);
+            closeTrainingEditor();
+            loadTraining();
+          }).catch(function (err) { showMsg('training-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.getElementById('appraisal-edit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!editingAppraisalId) return;
+          var data = {
+            empId: document.getElementById('ape-emp').value.trim(),
+            period: document.getElementById('ape-period').value.trim(),
+            rating: parseInt(document.getElementById('ape-rating').value, 10),
+            reviewDate: document.getElementById('ape-date').value,
+            remarks: document.getElementById('ape-remarks').value.trim() || null,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+          };
+          db.ref('hr_appraisal/' + editingAppraisalId).update(data).then(function () {
+            showMsg('appraisal-msg', 'Appraisal updated.', false);
+            closeAppraisalEditor();
+            loadAppraisal();
+          }).catch(function (err) { showMsg('appraisal-edit-msg', err.message || 'Failed to update.', true); });
+        });
+
+        document.addEventListener('click', function (e) {
+          var btn = e.target.closest('[data-h-action]');
+          if (!btn) return;
+          if (!canManageHR()) return;
+          var type = btn.getAttribute('data-h-type');
+          var key = btn.getAttribute('data-h-key');
+          var action = btn.getAttribute('data-h-action');
+          var path =
+            type === 'employee' ? 'hr_employees/' + key :
+            type === 'attendance' ? 'hr_attendance/' + key :
+            type === 'training' ? 'hr_training/' + key :
+            'hr_appraisal/' + key;
+
+          if (action === 'delete') {
+            if (!confirm('Delete this record?')) return;
+            db.ref(path).remove().then(function () {
+              if (type === 'employee') { loadEmployees(); renderDepartment(); renderAttrition(); }
+              else if (type === 'attendance') loadAttendance();
+              else if (type === 'training') loadTraining();
+              else loadAppraisal();
+            });
+            return;
+          }
+
+          db.ref(path).once('value').then(function (snap) {
+            var row = snap.val();
+            if (!row) return;
+            if (type === 'employee') {
+              editingEmpKey = key;
+              document.getElementById('emp-id').value = row.empId || '';
+              document.getElementById('emp-name').value = row.name || '';
+              document.getElementById('emp-dept').value = row.department || '';
+              document.getElementById('emp-designation').value = row.designation || '';
+              document.getElementById('emp-email').value = row.email || '';
+              document.getElementById('emp-doj').value = row.doj || '';
+              document.getElementById('emp-status').value = row.status || 'Active';
+              showMsg('emp-msg', 'Editing employee. Update details and click Add / Update Employee.', false);
+            } else if (type === 'attendance') {
+              editingAttendanceId = key;
+              document.getElementById('ae-date').value = row.date || '';
+              document.getElementById('ae-emp').value = row.empId || '';
+              document.getElementById('ae-status').value = row.status || '';
+              document.getElementById('ae-leave-type').value = row.leaveType || '';
+              document.getElementById('ae-remarks').value = row.remarks || '';
+              document.getElementById('attendance-edit-panel').style.display = 'block';
+            } else if (type === 'training') {
+              editingTrainingId = key;
+              document.getElementById('te-emp').value = row.empId || '';
+              document.getElementById('te-name').value = row.trainingName || '';
+              document.getElementById('te-date').value = row.date || '';
+              document.getElementById('te-skill').value = row.skill || '';
+              document.getElementById('te-status').value = row.status || 'Completed';
+              document.getElementById('te-remarks').value = row.remarks || '';
+              document.getElementById('training-edit-panel').style.display = 'block';
+            } else {
+              editingAppraisalId = key;
+              document.getElementById('ape-emp').value = row.empId || '';
+              document.getElementById('ape-period').value = row.period || '';
+              document.getElementById('ape-rating').value = String(row.rating || '');
+              document.getElementById('ape-date').value = row.reviewDate || '';
+              document.getElementById('ape-remarks').value = row.remarks || '';
+              document.getElementById('appraisal-edit-panel').style.display = 'block';
+            }
+          });
+        });
+
+        document.getElementById('dept-filter').addEventListener('change', renderDepartment);
+        var y = new Date().getFullYear();
+        var yearOpt = '';
+        for (var i = 0; i < 5; i++) { yearOpt += '<option value="' + (y - i) + '"' + (i === 0 ? ' selected' : '') + '>' + (y - i) + '</option>'; }
+        document.getElementById('attrition-year').innerHTML = yearOpt;
+        document.getElementById('attrition-dept').addEventListener('change', renderAttrition);
+        document.getElementById('attrition-year').addEventListener('change', renderAttrition);
+
+        loadEmployees();
+        loadAttendance();
+        loadTraining();
+        loadAppraisal();
+        renderDepartment();
+        renderAttrition();
+      }
+
+      function loadList(path, wrapId, cols, mapper) {
+        var wrap = document.getElementById(wrapId);
+        if (!wrap) return;
+        wrap.innerHTML = '<div class="loading">Loading…</div>';
+        db.ref(path).once('value').then(function (snap) {
+          var val = snap.val(), rows = [];
+          if (val) {
+            if (path === 'hr_employees') Object.keys(val).forEach(function (k) { rows.push({ id: k, data: val[k] }); });
+            else Object.keys(val).forEach(function (k) { rows.push({ id: k, data: val[k] }); });
+          }
+          rows.sort(function (a, b) { return (b.data.enteredAt || 0) - (a.data.enteredAt || 0); });
+          if (!rows.length) { wrap.innerHTML = '<table><tbody><tr><td style="color:var(--text-muted);">No records yet.</td></tr></tbody></table>'; return; }
+          var tr = rows.slice(0, 50).map(function (r) { return mapper(r); }).join('');
+          wrap.innerHTML = '<table><thead><tr>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' + tr + '</tbody></table>';
+        });
+      }
+
+      function loadEmployees() {
+        loadList('hr_employees', 'emp-list', ['Emp ID', 'Name', 'Department', 'Designation', 'DOJ', 'Status', 'Email', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.empId || r.id) + '</td><td>' + (x.name || '—') + '</td><td>' + (x.department || '—') + '</td><td>' + (x.designation || '—') + '</td><td>' + (x.doj || '—') + '</td><td>' + (x.status || '—') + '</td><td>' + (x.email || '—') + '</td><td>' + rowActions('employee', r.id) + '</td></tr>';
+        });
+      }
+
+      function loadAttendance() {
+        loadList('hr_attendance', 'attendance-list', ['Date', 'Emp ID', 'Status', 'Leave Type', 'Remarks', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.date || '—') + '</td><td>' + (x.empId || '—') + '</td><td>' + (x.status || '—') + '</td><td>' + (x.leaveType || '—') + '</td><td>' + (x.remarks || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('attendance', r.id) + '</td></tr>';
+        });
+      }
+
+      function loadTraining() {
+        loadList('hr_training', 'training-list', ['Emp ID', 'Training', 'Date', 'Skill', 'Status', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.empId || '—') + '</td><td>' + (x.trainingName || '—') + '</td><td>' + (x.date || '—') + '</td><td>' + (x.skill || '—') + '</td><td>' + (x.status || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('training', r.id) + '</td></tr>';
+        });
+      }
+
+      function loadAppraisal() {
+        loadList('hr_appraisal', 'appraisal-list', ['Emp ID', 'Period', 'Rating', 'Review Date', 'Remarks', 'Entered By', 'Actions'], function (r) {
+          var x = r.data;
+          return '<tr><td>' + (x.empId || '—') + '</td><td>' + (x.period || '—') + '</td><td>' + (x.rating || '—') + '</td><td>' + (x.reviewDate || '—') + '</td><td>' + (x.remarks || '—') + '</td><td>' + (x.enteredByName || '—') + '</td><td>' + rowActions('appraisal', r.id) + '</td></tr>';
+        });
+      }
+
+      function renderDepartment() {
+        var dept = document.getElementById('dept-filter').value;
+        db.ref('hr_employees').once('value').then(function (snap) {
+          var val = snap.val(), list = [];
+          if (val) Object.keys(val).forEach(function (k) {
+            var x = val[k];
+            if (x.status === 'Active' && (!dept || x.department === dept)) list.push(x);
+          });
+          list.sort(function (a, b) { return (a.department || '').localeCompare(b.department || '') || (a.name || '').localeCompare(b.name || ''); });
+          var byDept = {};
+          list.forEach(function (e) { var d = e.department || 'Other'; byDept[d] = (byDept[d] || 0) + 1; });
+          var summary = Object.keys(byDept).sort().map(function (d) { return '<tr><td>' + d + '</td><td>' + byDept[d] + '</td></tr>'; }).join('');
+          var detail = list.map(function (e) { return '<tr><td>' + (e.empId || '—') + '</td><td>' + (e.name || '—') + '</td><td>' + (e.department || '—') + '</td><td>' + (e.designation || '—') + '</td><td>' + (e.doj || '—') + '</td></tr>'; }).join('');
+          document.getElementById('dept-content').innerHTML = '<div class="report-section"><h3>Headcount by Department</h3><table><thead><tr><th>Department</th><th>Count</th></tr></thead><tbody>' + (summary || '<tr><td colspan="2">No data.</td></tr>') + '</tbody></table></div><div class="report-section"><h3>Employee Details</h3><table><thead><tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Designation</th><th>DOJ</th></tr></thead><tbody>' + (detail || '<tr><td colspan="5">No data.</td></tr>') + '</tbody></table></div>';
+        });
+      }
+
+      function renderAttrition() {
+        var year = document.getElementById('attrition-year').value;
+        var dept = document.getElementById('attrition-dept').value;
+        db.ref('hr_employees').once('value').then(function (snap) {
+          var val = snap.val(), resigned = [], active = [];
+          if (val) Object.keys(val).forEach(function (k) {
+            var x = val[k];
+            var dojYear = (x.doj || '').slice(0, 4);
+            if (x.status === 'Resigned' && (!year || dojYear === year) && (!dept || x.department === dept)) resigned.push(x);
+            if (x.status === 'Active' && (!dept || x.department === dept)) active.push(x);
+          });
+          var byDeptResigned = {};
+          resigned.forEach(function (e) { var d = e.department || 'Other'; byDeptResigned[d] = (byDeptResigned[d] || 0) + 1; });
+          var byDeptActive = {};
+          active.forEach(function (e) { var d = e.department || 'Other'; byDeptActive[d] = (byDeptActive[d] || 0) + 1; });
+          var totalResigned = resigned.length, totalActive = active.length;
+          var rate = totalActive ? ((totalResigned / (totalActive + totalResigned)) * 100).toFixed(1) : 0;
+          var rows = Object.keys(Object.assign({}, byDeptResigned, byDeptActive)).sort().map(function (d) {
+            var r = byDeptResigned[d] || 0, a = byDeptActive[d] || 0;
+            var pct = (a + r) ? ((r / (a + r)) * 100).toFixed(1) : 0;
+            return '<tr><td>' + d + '</td><td>' + a + '</td><td>' + r + '</td><td>' + pct + '%</td></tr>';
+          }).join('');
+          document.getElementById('attrition-content').innerHTML = '<div class="report-section"><p><strong>Total Active:</strong> ' + totalActive + ' | <strong>Resigned (filtered):</strong> ' + totalResigned + ' | <strong>Attrition Rate:</strong> ' + rate + '%</p></div><div class="report-section"><table><thead><tr><th>Department</th><th>Active</th><th>Resigned</th><th>Attrition %</th></tr></thead><tbody>' + (rows || '<tr><td colspan="4">No data.</td></tr>') + '</tbody></table></div>';
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
